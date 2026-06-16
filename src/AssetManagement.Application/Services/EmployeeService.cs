@@ -74,4 +74,17 @@ public class EmployeeService : IEmployeeService
 
         await _employeeRepository.UpdateAsync(employee);
     }
+    public async Task ActivateEmployeeAsync(int id)
+    {
+        var employee = await _employeeRepository.GetByIdAsync(id);
+
+        if (employee == null)
+        {
+            throw new ArgumentException("Not a valid employee Id, employee not found.");
+        }
+
+        employee.Status = EmployeeStatus.Active;
+
+        await _employeeRepository.UpdateAsync(employee);
+    }
 }

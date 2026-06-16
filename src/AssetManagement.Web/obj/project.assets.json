@@ -3207,31 +3207,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ASUS\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\dell\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Web\\AssetManagement.Web.csproj",
+      "projectUniqueName": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Web\\AssetManagement.Web.csproj",
       "projectName": "AssetManagement.Web",
-      "projectPath": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Web\\AssetManagement.Web.csproj",
-      "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-      "outputPath": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Web\\obj\\",
+      "projectPath": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Web\\AssetManagement.Web.csproj",
+      "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
+      "outputPath": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Web\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\dell\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3239,14 +3232,14 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Application\\AssetManagement.Application.csproj": {
-              "projectPath": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Application\\AssetManagement.Application.csproj"
+            "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Application\\AssetManagement.Application.csproj": {
+              "projectPath": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Application\\AssetManagement.Application.csproj"
             },
-            "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj": {
-              "projectPath": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj"
+            "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj": {
+              "projectPath": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj"
             },
-            "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Infrastructure\\AssetManagement.Infrastructure.csproj": {
-              "projectPath": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Infrastructure\\AssetManagement.Infrastructure.csproj"
+            "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Infrastructure\\AssetManagement.Infrastructure.csproj": {
+              "projectPath": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Infrastructure\\AssetManagement.Infrastructure.csproj"
             }
           }
         }

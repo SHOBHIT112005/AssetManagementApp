@@ -20,3 +20,15 @@ D:\csharp\temp\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\A
 D:\csharp\temp\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\refint\AssetManagement.Domain.dll
 D:\csharp\temp\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.pdb
 D:\csharp\temp\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\ref\AssetManagement.Domain.dll
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\bin\Debug\net10.0\AssetManagement.Domain.deps.json
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\bin\Debug\net10.0\AssetManagement.Domain.dll
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\bin\Debug\net10.0\AssetManagement.Domain.pdb
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.GeneratedMSBuildEditorConfig.editorconfig
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.AssemblyInfoInputs.cache
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.AssemblyInfo.cs
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.csproj.CoreCompileInputs.cache
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.sourcelink.json
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.dll
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\refint\AssetManagement.Domain.dll
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\AssetManagement.Domain.pdb
+G:\Office\AssetManagementApp\src\AssetManagement.Domain\obj\Debug\net10.0\ref\AssetManagement.Domain.dll

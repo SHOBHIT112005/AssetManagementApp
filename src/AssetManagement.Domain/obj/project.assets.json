@@ -8,31 +8,24 @@
     "net10.0": []
   },
   "packageFolders": {
-    "C:\\Users\\ASUS\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\dell\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj",
+      "projectUniqueName": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj",
       "projectName": "AssetManagement.Domain",
-      "projectPath": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj",
-      "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-      "outputPath": "D:\\csharp\\AssetManagementApp\\src\\AssetManagement.Domain\\obj\\",
+      "projectPath": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Domain\\AssetManagement.Domain.csproj",
+      "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
+      "outputPath": "G:\\Office\\AssetManagementApp\\src\\AssetManagement.Domain\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\dell\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

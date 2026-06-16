@@ -2,6 +2,7 @@
 
 @using AssetManagement.Application.Interfaces
 @using AssetManagement.Domain.Entities
+@using AssetManagement.Domain.Enums
 
 @inject IEmployeeService EmployeeService
 @inject NavigationManager Navigation
@@ -33,15 +34,20 @@ else
                     <td>@employee.Email</td>
                     <td>@employee.Status</td>
                     <td>
-                        <NavLink class="btn btn-primary" href="@($"/employees/edit/{employee.Id}")">
-                        Edit
-                        </NavLink> | 
-                        <button class="btn btn-primary" @onclick="() => DeactivateEmployee(employee.Id)">Deactivate</button>
-                    </td>
+                        @if (employee.Status == EmployeeStatus.Active)
+                        {
+                            <NavLink class="btn btn-primary" href="@($"/employees/edit/{employee.Id}")">
+                                Edit
+                            </NavLink>
+                            <span class="mx-1"> | </span>
+                            <button class="btn btn-primary" @onclick="() => DeactivateEmployee(employee.Id)">Deactivate</button>
+                        } else {
+                            <button class="btn btn-primary" @onclick="() => ActivateEmployee(employee.Id)">Activate</button>
+                        }</td>
                 </tr>
             }
-        </tbody>
-    </table>
+</tbody>
+</table>
 }
 <NavLink class="btn btn-primary" href="/employees/create">
     Create Employee +
@@ -54,8 +60,14 @@ else
     {
         EmployeeList = await EmployeeService.GetAllEmployeesAsync();
     }
-    private async Task DeactivateEmployee(int id) {
+    private async Task DeactivateEmployee(int id)
+    {
         await EmployeeService.DeactivateEmployeeAsync(id);
+        EmployeeList = await EmployeeService.GetAllEmployeesAsync();
+    }
+    private async Task ActivateEmployee(int id)
+    {
+        await EmployeeService.ActivateEmployeeAsync(id);
         EmployeeList = await EmployeeService.GetAllEmployeesAsync();
     }
 }

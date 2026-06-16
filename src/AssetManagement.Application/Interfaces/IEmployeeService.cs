@@ -14,4 +14,6 @@ public interface IEmployeeService
     Task UpdateEmployeeAsync(Employee employee);
 
     Task DeactivateEmployeeAsync(int id);
+    
+    Task ActivateEmployeeAsync(int id);
 }
