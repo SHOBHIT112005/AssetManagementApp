@@ -1,0 +1,111 @@
+@page "/employees/edit/{Id:int}"
+@rendermode InteractiveServer
+
+@using AssetManagement.Application.Interfaces
+@using AssetManagement.Domain.Entities
+@using Microsoft.AspNetCore.Components.Forms
+@using AssetManagement.Domain.Enums
+
+@inject IEmployeeService EmployeeService
+
+@inject NavigationManager Navigation
+
+
+<h2>Edit Employee</h2>
+
+@if (employee == null)
+{
+    <p>Loading employee details, please wait....</p>
+}
+else
+{
+    <EditForm Model="employee" OnValidSubmit="UpdateEmployee" FormName="EditEmployee">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label for="fullName" class="form-label">
+                Full Name <span class="text-danger">*</span>
+            </label>
+
+            <InputText id="fullName" class="form-control" @bind-Value="employee.FullName" />
+            <ValidationMessage For="@(() => employee.FullName)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="department" class="form-label">
+                Department <span class="text-danger">*</span>
+            </label>
+
+            <InputSelect id="department" class="form-select" @bind-Value="employee.Department">
+
+                <option value="">-- Select Department --</option>
+
+                @foreach (Department department in Enum.GetValues<Department>())
+                {
+                    <option value="@department">
+                        @department
+                    </option>
+                }
+
+            </InputSelect>
+            <ValidationMessage For="@(() => employee.Department)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">
+                Email <span class="text-danger">*</span>
+            </label>
+
+            <InputText id="email" class="form-control" @bind-Value="employee.Email" />
+            <ValidationMessage For="@(() => employee.Email)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="status" class="form-label">
+                Status <span class="text-danger">*</span>
+            </label>
+
+            <InputSelect id="status" class="form-select" @bind-Value="employee.Status">
+
+                <option value="">-- Select Status --</option>
+
+                @foreach (EmployeeStatus status in Enum.GetValues<EmployeeStatus>())
+                {
+                    <option value="@status">
+                        @status
+                    </option>
+                }
+
+            </InputSelect>
+            <ValidationMessage For="@(() => employee.Status)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save
+        </button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Employee? employee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            employee = await EmployeeService.GetEmployeeByIdAsync(Id);
+        }
+        catch (ArgumentException)
+        {
+            Navigation.NavigateTo(uri: "/employees");
+        }
+    }
+
+    private async Task UpdateEmployee()
+    {
+        await EmployeeService.UpdateEmployeeAsync(employee!);
+        Navigation.NavigateTo(uri: "/employees");
+    }
+}

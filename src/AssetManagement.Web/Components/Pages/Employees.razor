@@ -1,0 +1,61 @@
+@page "/employees"
+
+@using AssetManagement.Application.Interfaces
+@using AssetManagement.Domain.Entities
+
+@inject IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+
+<h3>Employees</h3>
+@if (!EmployeeList.Any())
+{
+    <p>No employees found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (Employee employee in EmployeeList)
+            {
+                <tr>
+                    <td>@employee.FullName</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Email</td>
+                    <td>@employee.Status</td>
+                    <td>
+                        <NavLink class="btn btn-primary" href="@($"/employees/edit/{employee.Id}")">
+                        Edit
+                        </NavLink> | 
+                        <button class="btn btn-primary" @onclick="() => DeactivateEmployee(employee.Id)">Deactivate</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<NavLink class="btn btn-primary" href="/employees/create">
+    Create Employee +
+</NavLink>
+
+@code {
+
+    private IEnumerable<Employee> EmployeeList = Enumerable.Empty<Employee>();
+    protected override async Task OnInitializedAsync()
+    {
+        EmployeeList = await EmployeeService.GetAllEmployeesAsync();
+    }
+    private async Task DeactivateEmployee(int id) {
+        await EmployeeService.DeactivateEmployeeAsync(id);
+        EmployeeList = await EmployeeService.GetAllEmployeesAsync();
+    }
+}

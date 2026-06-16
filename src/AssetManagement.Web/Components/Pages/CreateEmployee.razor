@@ -1,0 +1,68 @@
+@page "/employees/create"
+@rendermode InteractiveServer
+
+@using AssetManagement.Application.Interfaces
+@using AssetManagement.Domain.Entities
+@using Microsoft.AspNetCore.Components.Forms
+@using AssetManagement.Domain.Enums
+
+@inject IEmployeeService EmployeeService
+
+@inject NavigationManager Navigation
+
+
+<EditForm Model="NewEmployee" OnValidSubmit="SaveEmployee" FormName="CreateEmployee">
+    <DataAnnotationsValidator />
+
+    <h2>Add a new Employee</h2>
+    <div class="mb-3">
+        <label for="fullName" class="form-label">
+            Full Name <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="fullName" class="form-control" @bind-Value="NewEmployee.FullName" placeholder="Enter employee full name" />
+        <ValidationMessage For="@(() => NewEmployee.FullName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="department" class="form-label">
+            Department <span class="text-danger">*</span>
+        </label>
+
+        <InputSelect id="department" class="form-select" @bind-Value="NewEmployee.Department">
+
+            <option value="">-- Select Department --</option>
+
+            @foreach (Department department in Enum.GetValues<Department>())
+            {
+                <option value="@department">
+                    @department
+                </option>
+            }
+
+        </InputSelect>
+        <ValidationMessage For="@(() => NewEmployee.Department)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">
+            Email <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="email" class="form-control" @bind-Value="NewEmployee.Email" placeholder="Enter email address"/>
+        <ValidationMessage For="@(() => NewEmployee.Email)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Save
+    </button>
+</EditForm>
+
+@code {
+    private Employee NewEmployee = new Employee();
+    private async Task SaveEmployee()
+    {
+        await EmployeeService.CreateEmployeeAsync(NewEmployee);
+        Navigation.NavigateTo(uri: "/employees");
+    }
+}
