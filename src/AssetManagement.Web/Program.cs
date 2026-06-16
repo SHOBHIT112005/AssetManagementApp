@@ -19,6 +19,7 @@ builder.Services.AddDbContext<AssetDbContext>(
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IAssetService, AssetService>();
 
 var app = builder.Build();
 

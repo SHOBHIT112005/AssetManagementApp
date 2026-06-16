@@ -1,0 +1,52 @@
+@page "/assets"
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Application.Interfaces
+@inject IAssetService AssetService
+<h3>Assets</h3>
+@if (!AssetList.Any())
+{
+    <p>No assets found, try creating one.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Asset Name</th>
+                <th>Type</th>
+                <th>Serial Number</th>
+                <th>Purchase Date</th>
+                <th>Warranty Expiry Date</th>
+                <th>Status</th>
+                <th>Condition</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (Asset asset in AssetList)
+            {
+                <tr>
+                    <td>@asset.AssetName</td>
+                    <td>@asset.Type</td>
+                    <td>@asset.SerialNumber</td>
+                    <td>@asset.PurchaseDate</td>
+                    <td>@asset.WarrantyExpiryDate</td>
+                    <td>@asset.Status</td>
+                    <td>@asset.Condition</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<NavLink class="btn btn-primary" href="/assets/create">
+    Create Asset +
+</NavLink>
+
+@code {
+    private IEnumerable<Asset> AssetList { get; set; } = new List<Asset>();
+    protected override async Task OnInitializedAsync()
+    {
+        AssetList = await AssetService.GetAllAssetsAsync();
+    }
+}

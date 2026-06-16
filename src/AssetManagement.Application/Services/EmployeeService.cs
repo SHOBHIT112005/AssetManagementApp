@@ -26,7 +26,6 @@ public class EmployeeService : IEmployeeService
 
     public Task CreateEmployeeAsync(Employee employee)
     {
-        employee.Status = EmployeeStatus.Active;
         if (string.IsNullOrWhiteSpace(employee.FullName))
         {
             throw new ArgumentException("Employee name is required.");
@@ -35,6 +34,7 @@ public class EmployeeService : IEmployeeService
         {
             throw new ArgumentException("Employee email is required.");
         }
+        employee.Status = EmployeeStatus.Active;
         return _employeeRepository.AddAsync(employee);
     }
 

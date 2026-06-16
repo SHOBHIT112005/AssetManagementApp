@@ -14,7 +14,7 @@ public interface IAssetRepository
 
     Task UpdateAsync(Asset asset);
 
-    Task DeleteAsync(int id); //change to soft delet in future to keep asset history
+    Task DeleteAsync(int id); //change to soft delete in future to keep asset history
 }
 
 
