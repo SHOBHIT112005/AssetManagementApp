@@ -19,6 +19,13 @@ public class Employee
     [StringLength(100,ErrorMessage = "Employee email must be less than 100 characters.")]
     public string Email { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Phone number is required.")]
+    [StringLength(10,ErrorMessage = "Phone number must be less than 10 characters.")]
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Please select an employee designation.")]
+    public EmployeeDesignation Designation { get; set; }
+
     public EmployeeStatus Status { get; set; }
 }
 // string.Empty avoids nullable warnings

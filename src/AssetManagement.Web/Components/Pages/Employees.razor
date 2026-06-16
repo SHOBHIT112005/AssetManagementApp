@@ -18,8 +18,10 @@ else
         <thead>
             <tr>
                 <th>Full Name</th>
-                <th>Department</th>
                 <th>Email</th>
+                <th>Phone Number</th>
+                <th>Department</th>
+                <th>Designation</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
@@ -30,8 +32,10 @@ else
             {
                 <tr>
                     <td>@employee.FullName</td>
-                    <td>@employee.Department</td>
                     <td>@employee.Email</td>
+                    <td>@employee.PhoneNumber</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Designation</td>
                     <td>@employee.Status</td>
                     <td>
                         @if (employee.Status == EmployeeStatus.Active)

@@ -20,8 +20,28 @@
             Full Name <span class="text-danger">*</span>
         </label>
 
-        <InputText id="fullName" class="form-control" @bind-Value="NewEmployee.FullName" placeholder="Enter employee full name" />
+        <InputText id="fullName" class="form-control" @bind-Value="NewEmployee.FullName"
+                   placeholder="Enter employee full name" />
         <ValidationMessage For="@(() => NewEmployee.FullName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">
+            Email <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="email" class="form-control" @bind-Value="NewEmployee.Email" placeholder="Enter email address" />
+        <ValidationMessage For="@(() => NewEmployee.Email)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="phoneNumber" class="form-label">
+            Phone Number <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="phoneNumber" class="form-control" @bind-Value="NewEmployee.PhoneNumber"
+                   placeholder="Enter phone number" />
+        <ValidationMessage For="@(() => NewEmployee.PhoneNumber)" />
     </div>
 
     <div class="mb-3">
@@ -45,12 +65,23 @@
     </div>
 
     <div class="mb-3">
-        <label for="email" class="form-label">
-            Email <span class="text-danger">*</span>
+        <label for="designation" class="form-label">
+            Designation <span class="text-danger">*</span>
         </label>
 
-        <InputText id="email" class="form-control" @bind-Value="NewEmployee.Email" placeholder="Enter email address"/>
-        <ValidationMessage For="@(() => NewEmployee.Email)" />
+        <InputSelect id="designation" class="form-select" @bind-Value="NewEmployee.Designation">
+
+            <option value="">-- Select Designation --</option>
+
+            @foreach (EmployeeDesignation designation in Enum.GetValues<EmployeeDesignation>())
+            {
+                <option value="@designation">
+                    @designation
+                </option>
+            }
+
+        </InputSelect>
+        <ValidationMessage For="@(() => NewEmployee.Designation)" />
     </div>
 
     <button type="submit" class="btn btn-primary">
