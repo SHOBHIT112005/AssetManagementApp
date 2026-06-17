@@ -1,0 +1,138 @@
+@page "/assets/edit/{Id:int}"
+@rendermode InteractiveServer
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Application.Interfaces
+@using AssetManagement.Domain.Enums
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject NavigationManager Navigation
+@inject IAssetService AssetService
+<h3>Edit Asset</h3>
+@if (asset == null)
+{
+    <p>Loading asset details, please wait...</p>
+}
+else
+{
+    <EditForm Model="asset" OnValidSubmit="UpdateAsset" FormName="EditAsset">
+        <DataAnnotationsValidator/>
+
+        <div class="mb-3">
+            <label for="name" class="form-label">
+                Asset Name <span class="text-danger">*</span>
+            </label>
+
+            <InputText id="name" class="form-control" @bind-Value="asset.AssetName"/>
+            <ValidationMessage For="@(() => asset.AssetName)"/>
+        </div>
+
+        <div class="mb-3">
+            <label for="serialNumber" class="form-label">
+                Serial Number <span class="text-danger">*</span>
+            </label>
+
+            <InputText id="serialNumber" class="form-control" @bind-Value="asset.SerialNumber"
+                       placeholder="Enter serial number"/>
+            <ValidationMessage For="@(() => asset.SerialNumber)"/>
+        </div>
+
+        <div class="mb-3">
+            <label for="assetType" class="form-label">
+                Asset Type <span class="text-danger">*</span>
+            </label>
+
+            <InputSelect id="assetType" class="form-select" @bind-Value="asset.Type">
+
+                <option value="">-- Select Asset Type --</option>
+
+                @foreach (AssetType type in Enum.GetValues<AssetType>())
+                {
+                    <option value="@type">
+                        @type
+                    </option>
+                }
+
+            </InputSelect>
+            <ValidationMessage For="@(() => asset.Type)"/>
+        </div>
+
+        <div class="mb-3">
+            <label>Purchase Date</label>
+            <InputDate @bind-Value="asset.PurchaseDate" TValue="DateTime" class="form-control" min="2000-01-01"
+                       max="@DateTime.Today.ToString("yyyy-MM-dd")"/>
+        </div>
+
+        <div class="mb-3">
+            <label>Warranty Expiry Date</label>
+            <InputDate @bind-Value="asset.WarrantyExpiryDate" TValue="DateTime" class="form-control" min="2000-01-01"
+                       max="2040-12-31"/>
+        </div>
+
+        <div class="mb-3">
+            <label for="assetStatus" class="form-label">
+                Asset Status <span class="text-danger">*</span>
+            </label>
+
+            <InputSelect id="assetStatus" class="form-select" @bind-Value="asset.Status">
+
+                <option value="">-- Select Asset Status --</option>
+
+                @foreach (AssetStatus status in Enum.GetValues<AssetStatus>())
+                {
+                    <option value="@status">
+                        @status
+                    </option>
+                }
+
+            </InputSelect>
+            <ValidationMessage For="@(() => asset.Status)"/>
+        </div>
+
+        <div class="mb-3">
+            <label for="assetCondition" class="form-label">
+                Asset Condition <span class="text-danger">*</span>
+            </label>
+
+            <InputSelect id="assetCondition" class="form-select" @bind-Value="asset.Condition">
+
+                <option value="">-- Select Asset Condition --</option>
+
+                @foreach (AssetCondition condition in Enum.GetValues<AssetCondition>())
+                {
+                    <option value="@condition">
+                        @condition
+                    </option>
+                }
+
+            </InputSelect>
+            <ValidationMessage For="@(() => asset.Condition)"/>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Asset</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Asset? asset;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            asset = await AssetService.GetAssetByIdAsync(Id);
+        }
+        catch (ArgumentException)
+        {
+            Navigation.NavigateTo(uri: "/assets");
+        }
+    }
+
+    private async Task UpdateAsset()
+    {
+        await AssetService.UpdateAssetAsync(asset!);
+        Navigation.NavigateTo(uri: "/assets");
+    }
+
+}

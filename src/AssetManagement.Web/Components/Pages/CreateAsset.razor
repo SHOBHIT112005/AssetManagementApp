@@ -1,0 +1,115 @@
+@page "/assets/create"
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Application.Interfaces
+@using AssetManagement.Domain.Enums
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject NavigationManager Navigation
+@inject IAssetService AssetService
+<h3>Create Asset</h3>
+
+<EditForm Model="NewAsset" OnValidSubmit="SaveAsset" FormName="CreateAsset">
+    <DataAnnotationsValidator />
+
+    <h2>Add a new Asset</h2>
+    <div class="mb-3">
+        <label for="fullName" class="form-label">
+            Asset Name <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="fullName" class="form-control" @bind-Value="NewAsset.AssetName" placeholder="Enter asset name" />
+        <ValidationMessage For="@(() => NewAsset.AssetName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="serialNumber" class="form-label">
+            Serial Number <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="serialNumber" class="form-control" @bind-Value="NewAsset.SerialNumber" placeholder="Enter serial number" />
+        <ValidationMessage For="@(() => NewAsset.SerialNumber)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="assetType" class="form-label">
+            Asset Type <span class="text-danger">*</span>
+        </label>
+
+        <InputSelect id="assetType" class="form-select" @bind-Value="NewAsset.Type">
+
+            <option value="">-- Select Asset Type --</option>
+
+            @foreach (AssetType type in Enum.GetValues<AssetType>())
+            {
+                <option value="@type">
+                    @type
+                </option>
+            }
+
+        </InputSelect>
+        <ValidationMessage For="@(() => NewAsset.Type)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Purchase Date</label>
+        <InputDate @bind-Value="NewAsset.PurchaseDate" TValue="DateTime" class="form-control"  min="2000-01-01" max="@DateTime.Today.ToString("yyyy-MM-dd")"/>
+    </div>
+
+    <div class="mb-3">
+        <label>Warranty Expiry Date</label>
+        <InputDate @bind-Value="NewAsset.WarrantyExpiryDate" TValue="DateTime" class="form-control"  min="2000-01-01"  max="2040-12-31"/>
+    </div>
+
+    <div class="mb-3">  
+        <label for="assetStatus" class="form-label">
+            Asset Status <span class="text-danger">*</span>
+        </label>
+
+        <InputSelect id="assetStatus" class="form-select" @bind-Value="NewAsset.Status">
+
+            <option value="">-- Select Asset Status --</option>
+
+            @foreach (AssetStatus status in Enum.GetValues<AssetStatus>())
+            {
+                <option value="@status">
+                    @status
+                </option>
+            }
+
+        </InputSelect>
+        <ValidationMessage For="@(() => NewAsset.Status)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="assetCondition" class="form-label">
+            Asset Condition <span class="text-danger">*</span>
+        </label>
+
+        <InputSelect id="assetCondition" class="form-select" @bind-Value="NewAsset.Condition">
+
+            <option value="">-- Select Asset Condition --</option>
+
+            @foreach (AssetCondition condition in Enum.GetValues<AssetCondition>())
+            {
+                <option value="@condition">
+                    @condition
+                </option>
+            }
+
+        </InputSelect>
+        <ValidationMessage For="@(() => NewAsset.Condition)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Save
+    </button>
+</EditForm>
+
+@code {
+    private Asset NewAsset = new Asset();
+    private async Task SaveAsset()
+    {
+        await AssetService.CreateAssetAsync(NewAsset);
+        Navigation.NavigateTo("/assets");
+    }
+}

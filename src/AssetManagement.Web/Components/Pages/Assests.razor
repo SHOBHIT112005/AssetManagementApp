@@ -1,6 +1,7 @@
 @page "/assets"
 @using AssetManagement.Domain.Entities
 @using AssetManagement.Application.Interfaces
+@using AssetManagement.Domain.Enums
 @inject IAssetService AssetService
 <h3>Assets</h3>
 @if (!AssetList.Any())
@@ -30,10 +31,20 @@ else
                     <td>@asset.AssetName</td>
                     <td>@asset.Type</td>
                     <td>@asset.SerialNumber</td>
-                    <td>@asset.PurchaseDate</td>
-                    <td>@asset.WarrantyExpiryDate</td>
+                    <td>@asset.PurchaseDate.ToString(format: "dd-MM-yyyy")</td>
+                    <td>@asset.WarrantyExpiryDate.ToString(format: "dd-MM-yyyy")</td>
                     <td>@asset.Status</td>
                     <td>@asset.Condition</td>
+                    <td>
+                        <NavLink class="btn btn-primary" href="@($"/assets/edit/{asset.Id}")">
+                                Edit
+                        </NavLink>
+                        @if(asset.Status == AssetStatus.Available)
+                        {
+                            <span class="mx-1"> | </span>
+                            <button class="btn btn-primary">Assign</button>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
