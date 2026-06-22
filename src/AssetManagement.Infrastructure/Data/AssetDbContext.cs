@@ -13,4 +13,6 @@ public class AssetDbContext : DbContext
     public DbSet<Employee> Employees => Set<Employee>();
 
     public DbSet<Asset> Assets => Set<Asset>();
+
+    public DbSet<AssetAssignment> AssetAssignments => Set<AssetAssignment>(); 
 }
