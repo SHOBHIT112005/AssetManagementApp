@@ -12,6 +12,7 @@ public class AssetAssignment
     public int EmployeeId { get; set; }
     [Required(ErrorMessage = "Please enter the assignment date.")]
     public DateTime AssignmentDate { get; set; }
+    [Range(typeof(DateTime), "2010-01-01", "2040-12-31", ErrorMessage = "Return date must be between 2010 and 2040.")]
     public DateTime? ReturnDate { get; set; }
     [StringLength(250)]
     public string? Notes { get; set; }

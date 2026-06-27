@@ -58,13 +58,13 @@ else
 
         <div class="mb-3">
             <label>Purchase Date</label>
-            <InputDate @bind-Value="asset.PurchaseDate" TValue="DateTime" class="form-control" min="2000-01-01"
+            <InputDate @bind-Value="asset.PurchaseDate" TValue="DateTime" class="form-control" min="2010-01-01"
                        max="@DateTime.Today.ToString("yyyy-MM-dd")"/>
         </div>
 
         <div class="mb-3">
             <label>Warranty Expiry Date</label>
-            <InputDate @bind-Value="asset.WarrantyExpiryDate" TValue="DateTime" class="form-control" min="2000-01-01"
+            <InputDate @bind-Value="asset.WarrantyExpiryDate" TValue="DateTime" class="form-control" min="2010-01-01"
                        max="2040-12-31"/>
         </div>
 

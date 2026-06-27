@@ -4,7 +4,6 @@ using AssetManagement.Web.Components;
 using AssetManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using AssetManagement.Application.Services;
-using AssetManagement.Web.Components.Pages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +19,8 @@ builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IAssetService, AssetService>();
+builder.Services.AddScoped<IAssetAssignmentRepository, AssetAssignmentRepository>();
+builder.Services.AddScoped<IAssetAssignmentService, AssetAssignmentService>();
 
 var app = builder.Build();
 

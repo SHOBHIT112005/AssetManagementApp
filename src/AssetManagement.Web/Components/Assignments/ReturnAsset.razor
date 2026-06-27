@@ -1,0 +1,108 @@
+@page "/assets/return/{assetId:int}"
+
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Application.Interfaces
+
+@inject IAssetService AssetService
+@inject IAssetAssignmentService AssetAssignmentService
+
+@inject IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+
+<h2>Return Asset :</h2>
+@if (SelectedAsset is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Asset Name</th>
+                <th>Serial Number</th>
+                <th>Purchase Date</th>
+                <th>Warranty Expiry Date</th>
+                <th>Assigned Employee</th>
+                <th>Assignment Date</th>
+                <th>Condition</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>@SelectedAsset.AssetName</td>
+                <td>@SelectedAsset.SerialNumber</td>
+                <td>@SelectedAsset.PurchaseDate.ToString(format: "dd-MM-yyyy")</td>
+                <td>@SelectedAsset.WarrantyExpiryDate.ToString(format: "dd-MM-yyyy")</td>
+                <td>@AssignedEmployee?.FullName</td>
+                <td>@SelectedAssignment?.AssignmentDate.ToString(format: "dd-MM-yyyy")</td>
+                <td>@SelectedAsset.Condition</td>
+            </tr>
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No asset selected.</p>
+}
+@if (SelectedAssignment is not null)
+{
+    <EditForm Model="SelectedAssignment" FormName="ReturnAsset" OnValidSubmit="ReturnAssignment">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <p class="text-warning">
+                Confirm to this asset :
+            </p>
+        </div>
+        <button type="submit" class="btn btn-primary">Return Asset</button>
+        <span class="mx-1"> | </span>
+        <NavLink class="btn btn-secondary" href="@($"/assets")">
+            Cancel
+        </NavLink>
+    </EditForm>
+}
+else
+{
+    <p>No active assignment found for this asset.</p>
+}
+
+
+@code {
+    [Parameter] public int assetId { get; set; }
+
+    private Asset? SelectedAsset;
+    private AssetAssignment? SelectedAssignment;
+
+    private Employee? AssignedEmployee;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            SelectedAsset = await AssetService.GetAssetByIdAsync(assetId);
+        }
+        catch (ArgumentException)
+        {
+            Navigation.NavigateTo(uri: "/assets");
+            return;
+        }
+        try
+        {
+            SelectedAssignment = await AssetAssignmentService.GetActiveAssignmentByAssetIdAsync(assetId) ?? throw new ArgumentException(message: "No active assignment found for this asset.");
+
+            AssignedEmployee = await EmployeeService.GetEmployeeByIdAsync(SelectedAssignment.EmployeeId);
+        }
+        catch (ArgumentException)
+        {
+            Navigation.NavigateTo(uri: "/assets");
+            return;
+        }
+    }
+
+    private async Task ReturnAssignment()
+    {
+        await AssetAssignmentService.ReturnAssetAsync(SelectedAssignment!.Id);
+        Navigation.NavigateTo(uri: "/assets");
+    }
+}
+

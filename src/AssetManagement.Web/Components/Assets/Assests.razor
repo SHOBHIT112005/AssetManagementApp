@@ -37,12 +37,26 @@ else
                     <td>@asset.Condition</td>
                     <td>
                         <NavLink class="btn btn-primary" href="@($"/assets/edit/{asset.Id}")">
-                                Edit
+                            Edit
                         </NavLink>
-                        @if(asset.Status == AssetStatus.Available)
+                        @if (asset.Status == AssetStatus.Available)
                         {
                             <span class="mx-1"> | </span>
-                            <button class="btn btn-primary">Assign</button>
+                            <NavLink class="btn btn-primary" href="@($"/assets/assign/{asset.Id}")">
+                                Assign
+                            </NavLink>
+                        } else if (asset.Status == AssetStatus.Assigned)
+                        {
+                            <span class="mx-1"> | </span>
+                            <NavLink class="btn btn-primary" href="@($"/assets/return/{asset.Id}")">
+                                Return
+                            </NavLink>
+                        } else
+                        {
+                            <span class="mx-1"> | </span>
+                            <button class="btn btn-primary">
+                                @asset.Status
+                            </button>
                         }
                     </td>
                 </tr>

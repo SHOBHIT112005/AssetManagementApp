@@ -6,7 +6,7 @@ namespace AssetManagement.Application.Interfaces;
 public interface IEmployeeService
 {
     Task<IEnumerable<Employee>> GetAllEmployeesAsync();
-
+    Task<IEnumerable<Employee>> GetActiveEmployeesAsync();
     Task<Employee?> GetEmployeeByIdAsync(int id);
 
     Task CreateEmployeeAsync(Employee employee);

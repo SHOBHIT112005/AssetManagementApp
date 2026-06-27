@@ -1,0 +1,110 @@
+@page "/assets/assign/{assetId:int}"
+
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Application.Interfaces
+
+@inject IEmployeeService EmployeeService
+@inject IAssetService AssetService
+@inject IAssetAssignmentService AssetAssignmentService
+@inject NavigationManager Navigation
+
+<h2>Assign Asset :</h2>
+@if (SelectedAsset is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Asset Name</th>
+                <th>Type</th>
+                <th>Serial Number</th>
+                <th>Purchase Date</th>
+                <th>Warranty Expiry Date</th>
+                <th>Condition</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>@SelectedAsset.AssetName</td>
+                <td>@SelectedAsset.Type</td>
+                <td>@SelectedAsset.SerialNumber</td>
+                <td>@SelectedAsset.PurchaseDate.ToString(format: "dd-MM-yyyy")</td>
+                <td>@SelectedAsset.WarrantyExpiryDate.ToString(format: "dd-MM-yyyy")</td>
+                <td>@SelectedAsset.Condition</td>
+            </tr>
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No asset selected.</p>
+}
+<EditForm Model="NewAssignment" FormName="AssignAsset" OnValidSubmit="CreateAssignment">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="employeeId" class="form-label">
+            Select an employee <span class="text-danger">*</span>
+        </label>
+        <InputSelect id="employeeId" @bind-Value="NewAssignment.EmployeeId" class="form-select">
+            <option value="0">-- Select Employee --</option>
+            @foreach (Employee employee in ActiveEmployees)
+            {
+                <option value="@employee.Id">
+                    @employee.FullName
+                </option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => NewAssignment.EmployeeId)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Assignment Date</label>
+        <InputDate @bind-Value="NewAssignment.AssignmentDate" TValue="DateTime" class="form-control" min="2010-01-01"
+                   max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        <ValidationMessage For="@(() => NewAssignment.AssignmentDate)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Notes</label>
+        <InputTextArea class="form-control" rows="5" @bind-Value="NewAssignment.Notes" />
+    </div>
+    <button type="submit" class="btn btn-primary">Assign Asset</button>
+</EditForm>
+
+
+@code {
+    [Parameter] public int assetId { get; set; }
+
+    private AssetAssignment NewAssignment = new AssetAssignment()
+    {
+        AssignmentDate = DateTime.Today
+    };
+
+    private Asset? SelectedAsset;
+
+    private IEnumerable<Employee> ActiveEmployees = Enumerable.Empty<Employee>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            SelectedAsset = await AssetService.GetAssetByIdAsync(assetId);
+        }
+        catch (ArgumentException)
+        {
+            Navigation.NavigateTo(uri: "/assets");
+        }
+        NewAssignment.AssetId = assetId;
+        ActiveEmployees = await EmployeeService.GetActiveEmployeesAsync();
+    }
+
+    private async Task CreateAssignment()
+    {
+        //Need some error handling here, if the asset is already assigned to an employee, we should not allow another assignment, etc.
+        await AssetAssignmentService.AssignAssetAsync(NewAssignment);
+        Navigation.NavigateTo(uri: "/assets");
+    }
+}
+

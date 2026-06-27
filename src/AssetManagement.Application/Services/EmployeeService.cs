@@ -18,6 +18,12 @@ public class EmployeeService : IEmployeeService
         return _employeeRepository.GetAllAsync();
     }
 
+    public async Task<IEnumerable<Employee>> GetActiveEmployeesAsync()
+    {
+        var employees = await _employeeRepository.GetAllAsync();
+        return employees.Where(e => e.Status == EmployeeStatus.Active);
+    }
+
     public async Task<Employee?> GetEmployeeByIdAsync(int id)
     {
         var employee = await _employeeRepository.GetByIdAsync(id) ?? throw new ArgumentException("Employee not found.");
