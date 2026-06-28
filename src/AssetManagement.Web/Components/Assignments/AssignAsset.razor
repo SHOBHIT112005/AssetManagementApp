@@ -61,8 +61,7 @@ else
 
     <div class="mb-3">
         <label>Assignment Date</label>
-        <InputDate @bind-Value="NewAssignment.AssignmentDate" TValue="DateTime" class="form-control" min="2010-01-01"
-                   max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        <InputDate @bind-Value="NewAssignment.AssignmentDate" TValue="DateOnly" class="form-control" min="2010-01-01" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
         <ValidationMessage For="@(() => NewAssignment.AssignmentDate)" />
     </div>
 
@@ -79,7 +78,7 @@ else
 
     private AssetAssignment NewAssignment = new AssetAssignment()
     {
-        AssignmentDate = DateTime.Today
+        AssignmentDate = DateOnly.FromDateTime(DateTime.Today)
     };
 
     private Asset? SelectedAsset;

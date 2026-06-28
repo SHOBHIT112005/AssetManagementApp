@@ -1,3 +1,4 @@
+using AssetManagement.Application.DTOs;
 using AssetManagement.Application.Interfaces;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums;
@@ -45,7 +46,7 @@ public class AssetAssignmentService : IAssetAssignmentService
 
         if (assetAssignment.AssignmentDate == default)
         {
-            assetAssignment.AssignmentDate = DateTime.Today;
+            assetAssignment.AssignmentDate = DateOnly.FromDateTime(DateTime.Today);
         }
 
         asset.Status = AssetStatus.Assigned;
@@ -65,7 +66,7 @@ public class AssetAssignmentService : IAssetAssignmentService
         var asset = await _assetRepository.GetByIdAsync(assignment.AssetId) ?? throw new ArgumentException("Asset not found.");
 
         asset.Status = AssetStatus.Available;
-        assignment.ReturnDate = DateTime.Today;
+        assignment.ReturnDate = DateOnly.FromDateTime(DateTime.Today);
 
         await _assetRepository.UpdateAsync(asset);
         await _assetAssignmentRepository.UpdateAsync(assignment);
@@ -102,5 +103,10 @@ public class AssetAssignmentService : IAssetAssignmentService
         var employee = await _employeeRepository.GetByIdAsync(employeeId) ?? throw new ArgumentException("Employee not found.");
 
         return await _assetAssignmentRepository.GetByEmployeeIdAsync(employeeId);
+    }
+
+    public Task<IEnumerable<AssetAssignmentHistoryDto>> GetAssetAssignmentHistoryAsync()
+    {
+        return _assetAssignmentRepository.GetAssignmentHistoryAsync();
     }
 }

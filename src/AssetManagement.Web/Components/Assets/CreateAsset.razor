@@ -50,12 +50,12 @@
 
     <div class="mb-3">
         <label>Purchase Date</label>
-        <InputDate @bind-Value="NewAsset.PurchaseDate" TValue="DateTime" class="form-control" min="2010-01-01" max="@DateTime.Today.ToString("yyyy-MM-dd")"/>
+        <InputDate @bind-Value="NewAsset.PurchaseDate" TValue="DateOnly" class="form-control" min="2010-01-01" max="@DateTime.Today.ToString("yyyy-MM-dd")"/>
     </div>
     
     <div class="mb-3">
         <label>Warranty Expiry Date</label>
-        <InputDate @bind-Value="NewAsset.WarrantyExpiryDate" TValue="DateTime" class="form-control" min="2010-01-01"  max="2040-12-31"/>
+        <InputDate @bind-Value="NewAsset.WarrantyExpiryDate" TValue="DateOnly" class="form-control" min="2010-01-01"  max="2040-12-31"/>
     </div>
 
     <div class="mb-3">  

@@ -1,1 +1,63 @@
-@page "/assignment"
+@page "/assignments"
+@using AssetManagement.Application.DTOs
+@using AssetManagement.Application.Interfaces
+
+@inject IAssetAssignmentService AssetAssignmentService
+
+@if (Assignments.Any())
+{
+    <h3>Asset Assignment History</h3>
+    <p class="text-muted">
+        View all current and previous asset assignments.
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Asset Name</th>
+                <th>Serial Number</th>
+                <th>Assigned Employee</th>
+                <th>Assignment Date</th>
+                <th>Return Date</th>
+                <th>Assignment Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (AssetAssignmentHistoryDto assignment in Assignments)
+            {
+                <tr>
+                    <td>@assignment.AssetName</td>
+                    <td>@assignment.SerialNumber</td>
+                    <td>@assignment.EmployeeName</td>
+                    <td>@assignment.AssignedDate.ToString(format: "dd-MM-yyyy")</td>
+                    <td>
+                        @(assignment.ReturnedDate?.ToString(format: "dd-MM-yyyy") ?? "—")
+                    </td>
+                    <td>
+                        @if (assignment.IsReturned)
+                        {
+                            <span class="badge bg-success">Returned</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary">Active</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No assignment history found.</p>
+}
+
+@code {
+    private IEnumerable<AssetAssignmentHistoryDto> Assignments = Enumerable.Empty<AssetAssignmentHistoryDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Assignments = await AssetAssignmentService.GetAssetAssignmentHistoryAsync();
+    }
+}

@@ -1,3 +1,4 @@
+using AssetManagement.Application.DTOs;
 using AssetManagement.Application.Interfaces;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Infrastructure.Data;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AssetManagement.Infrastructure.Repositories;
 
 public class AssetAssignmentRepository : IAssetAssignmentRepository
-{   
+{
     private readonly AssetDbContext _context;
 
     public AssetAssignmentRepository(AssetDbContext context)
@@ -44,5 +45,24 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
     public async Task<IEnumerable<AssetAssignment>> GetByEmployeeIdAsync(int employeeId)
     {
         return await _context.AssetAssignments.AsNoTracking().Where(a => a.EmployeeId == employeeId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<AssetAssignmentHistoryDto>> GetAssignmentHistoryAsync()
+    {
+        return await _context.AssetAssignments
+        .AsNoTracking()
+        .Include(a => a.Asset)
+        .Include(a => a.Employee)
+        .Select(a => new AssetAssignmentHistoryDto
+        {
+            AssignmentId = a.Id,
+            EmployeeName = a.Employee.FullName,
+            AssetName = a.Asset.AssetName,
+            SerialNumber = a.Asset.SerialNumber,
+            AssignedDate = a.AssignmentDate,
+            ReturnedDate = a.ReturnDate,
+            IsReturned = a.ReturnDate != null
+        })
+        .ToListAsync();
     }
 }

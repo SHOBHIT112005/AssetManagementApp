@@ -1,3 +1,4 @@
+using AssetManagement.Application.DTOs;
 using AssetManagement.Domain.Entities;
 
 namespace AssetManagement.Application.Interfaces;
@@ -10,5 +11,6 @@ public interface IAssetAssignmentRepository
     Task<AssetAssignment?> GetByIdAsync(int id);
     Task<IEnumerable<AssetAssignment>> GetByEmployeeIdAsync(int employeeId);
     Task<IEnumerable<AssetAssignment>> GetByAssetIdAsync(int assetId);
+    Task<IEnumerable<AssetAssignmentHistoryDto>> GetAssignmentHistoryAsync();
 }
 
