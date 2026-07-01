@@ -1,15 +1,49 @@
 @page "/assets"
-@using AssetManagement.Domain.Entities
+@using AssetManagement.Application.DTOs
 @using AssetManagement.Application.Interfaces
+@using AssetManagement.Domain.Entities
 @using AssetManagement.Domain.Enums
 @inject IAssetService AssetService
-<h3>Assets</h3>
+<h2>Assets</h2>
 @if (!AssetList.Any())
 {
     <p>No assets found, try creating one.</p>
 }
 else
 {
+    <h3>Search Assets</h3>
+    <InputSelect @bind-Value="Query.SearchField" class="form-select mb-3">
+        <option value="@AssetSearchField.AssetName">Asset Name</option>
+        <option value="@AssetSearchField.SerialNumber">Serial Number</option>
+    </InputSelect>
+    <InputText @bind-Value="Query.SearchTerm" placeholder="Search by asset name or serial number" class="form-control mb-3" />
+    <button class="btn btn-primary mb-3" @onclick="LoadAssetsAsync">Search</button>
+    <h3>Filter Assets</h3>
+    <InputSelect @bind-Value="Query.Status" class="form-select mb-3">
+        <option value="">All Statuses</option>
+        @foreach (AssetStatus status in AssetStatuses)
+        {
+            <option value="@status">@status</option>
+        }
+    </InputSelect>
+    <InputSelect @bind-Value="Query.AssetType" class="form-select mb-3">
+        <option value="">All Types</option>
+        @foreach (AssetType type in AssetTypes)
+        {
+            <option value="@type">@type</option>
+        }
+    </InputSelect>
+    <button class="btn btn-primary mb-3" @onclick="LoadAssetsAsync">Filter</button>
+    <h3>Asset Summary</h3>
+    <div>
+        <div>Total Assets : @AssetSummary.TotalAssets</div>
+        <div>Available Assets : @AssetSummary.AvailableAssets</div>
+        <div>Assigned Assets : @AssetSummary.AssignedAssets</div>
+        <div>Under Repair Assets : @AssetSummary.UnderRepairAssets</div>
+        <div>Retired Assets : @AssetSummary.RetiredAssets</div>
+    </div>
+    <button class="btn btn-primary mb-3" @onclick="ResetAsync">Reset</button>
+    <h3>Asset List</h3>
     <table class="table">
         <thead>
             <tr>
@@ -45,13 +79,15 @@ else
                             <NavLink class="btn btn-primary" href="@($"/assets/assign/{asset.Id}")">
                                 Assign
                             </NavLink>
-                        } else if (asset.Status == AssetStatus.Assigned)
+                        }
+                        else if (asset.Status == AssetStatus.Assigned)
                         {
                             <span class="mx-1"> | </span>
                             <NavLink class="btn btn-primary" href="@($"/assets/return/{asset.Id}")">
                                 Return
                             </NavLink>
-                        } else
+                        }
+                        else
                         {
                             <span class="mx-1"> | </span>
                             <button class="btn btn-primary">
@@ -70,8 +106,24 @@ else
 
 @code {
     private IEnumerable<Asset> AssetList { get; set; } = new List<Asset>();
+    private AssetSummaryDto AssetSummary { get; set; } = new AssetSummaryDto();
+    private AssetQueryDto Query { get; set; } = new AssetQueryDto();
+
+    private IEnumerable<AssetStatus> AssetStatuses => Enum.GetValues<AssetStatus>();
+
+    private IEnumerable<AssetType> AssetTypes => Enum.GetValues<AssetType>();
+    private async Task LoadAssetsAsync()
+    {
+        AssetList = await AssetService.GetAllAssetsAsync(queryDto: Query);
+        AssetSummary = await AssetService.GetAssetSummaryServiceAsync(queryDto : Query);
+    }
+    private async Task ResetAsync()
+    {
+        Query = new AssetQueryDto();
+        await LoadAssetsAsync();
+    }
     protected override async Task OnInitializedAsync()
     {
-        AssetList = await AssetService.GetAllAssetsAsync();
+        await LoadAssetsAsync();
     }
 }

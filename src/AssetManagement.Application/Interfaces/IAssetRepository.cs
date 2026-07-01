@@ -1,10 +1,11 @@
+using AssetManagement.Application.DTOs;
 using AssetManagement.Domain.Entities;
 
 namespace AssetManagement.Application.Interfaces;
 
 public interface IAssetRepository
 {
-    Task<IEnumerable<Asset>> GetAllAsync();
+    Task<IEnumerable<Asset>> GetAllAsync(AssetQueryDto queryDto);
 
     Task<Asset?> GetByIdAsync(int id);
 
@@ -15,6 +16,8 @@ public interface IAssetRepository
     Task UpdateAsync(Asset asset);
 
     Task DeleteAsync(int id); //change to soft delete in future to keep asset history
+
+    Task<AssetSummaryDto> GetAssetSummaryAsync(AssetQueryDto queryDto);
 }
 
 

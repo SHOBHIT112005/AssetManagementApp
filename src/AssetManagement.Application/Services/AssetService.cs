@@ -1,3 +1,4 @@
+using AssetManagement.Application.DTOs;
 using AssetManagement.Application.Interfaces;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums;
@@ -13,9 +14,9 @@ public class AssetService : IAssetService
         _assetRepository = assetRepository;
     }
 
-    public Task<IEnumerable<Asset>> GetAllAssetsAsync()
+    public Task<IEnumerable<Asset>> GetAllAssetsAsync(AssetQueryDto queryDto)
     {
-        return _assetRepository.GetAllAsync();
+        return _assetRepository.GetAllAsync(queryDto);
     }
 
     public async Task<Asset?> GetAssetByIdAsync(int id)
@@ -74,5 +75,10 @@ public class AssetService : IAssetService
         
         asset.Status = newStatus;
         await _assetRepository.UpdateAsync(asset);
+    }
+
+    public async Task<AssetSummaryDto> GetAssetSummaryServiceAsync(AssetQueryDto queryDto)
+    {
+        return await _assetRepository.GetAssetSummaryAsync(queryDto);
     }
 }

@@ -1,3 +1,4 @@
+using AssetManagement.Application.DTOs;
 using AssetManagement.Application.Interfaces;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums;
@@ -15,11 +16,36 @@ public class AssetRepository : IAssetRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Asset>> GetAllAsync()
+    public async Task<IEnumerable<Asset>> GetAllAsync(AssetQueryDto queryDto)
     {
-        return await _context.Assets
-            .AsNoTracking()
-            .ToListAsync();
+        var query = _context.Assets.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrEmpty(queryDto.SearchTerm))
+        {
+            switch (queryDto.SearchField)
+            {
+                case AssetSearchField.AssetName:
+                    query = query.Where(a => a.AssetName.Contains(queryDto.SearchTerm));
+                    break;
+                case AssetSearchField.SerialNumber:
+                    query = query.Where(a => a.SerialNumber.Contains(queryDto.SearchTerm));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (queryDto.Status.HasValue)
+        {
+            query = query.Where(a => a.Status == queryDto.Status.Value);
+        }
+
+        if (queryDto.AssetType.HasValue)
+        {
+            query = query.Where(a => a.Type == queryDto.AssetType.Value);
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<Asset?> GetByIdAsync(int id)
@@ -52,5 +78,35 @@ public class AssetRepository : IAssetRepository
 
         _context.Assets.Remove(asset);
         await _context.SaveChangesAsync();
+    }
+
+    //Important function that provides a summary of assets based on their status and type, useful for dashboard displays and quick insights.
+    public async Task<AssetSummaryDto> GetAssetSummaryAsync(AssetQueryDto queryDto)
+    {
+        var query = _context.Assets.AsNoTracking().AsQueryable();
+
+        if(queryDto.Status.HasValue)
+        {
+            query = query.Where(a => a.Status == queryDto.Status.Value);
+        }
+
+        if(queryDto.AssetType.HasValue)
+        {
+            query = query.Where(a => a.Type == queryDto.AssetType.Value);
+        }
+
+        var summary = await query
+        .GroupBy(a => a.Status)
+        .Select(g => new { Status = g.Key, Count = g.Count() })
+        .ToDictionaryAsync(x => x.Status, x => x.Count);
+
+        return new AssetSummaryDto
+        {
+            TotalAssets = summary.Values.Sum(),
+            AvailableAssets = summary.GetValueOrDefault(AssetStatus.Available, 0),
+            AssignedAssets = summary.GetValueOrDefault(AssetStatus.Assigned, 0),
+            UnderRepairAssets = summary.GetValueOrDefault(AssetStatus.UnderRepair, 0),
+            RetiredAssets = summary.GetValueOrDefault(AssetStatus.Retired, 0)
+        };
     }
 }
