@@ -104,7 +104,12 @@
 </EditForm>
 
 @code {
-    private Asset NewAsset = new Asset();
+    private Asset NewAsset = new Asset
+    {
+        PurchaseDate = DateOnly.FromDateTime(DateTime.Today),
+        WarrantyExpiryDate = DateOnly.FromDateTime(DateTime.Today.AddYears(3))
+    };
+
     private async Task SaveAsset()
     {
         await AssetService.CreateAssetAsync(NewAsset);

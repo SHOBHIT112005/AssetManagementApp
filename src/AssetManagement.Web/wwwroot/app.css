@@ -1,19 +1,49 @@
+:root {
+    --brand-sidebar: #1F2633;
+    --brand-secondary: #3A414A;
+    --brand-primary: #00B4B6;
+    --brand-bg: #F3F4F6;
+    --brand-text: #1F2633;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: var(--brand-primary);
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color: #009698;
+    border-color: #009698;
+    color: #fff;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(0, 180, 182, 0.25);
+}
+
+/* Custom Helpers */
+.card {
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: #6c757d;
+    background-color: #fff;
+    border-radius: 0.5rem;
 }
 
 .content {
