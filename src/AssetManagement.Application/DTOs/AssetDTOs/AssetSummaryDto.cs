@@ -1,4 +1,4 @@
-namespace AssetManagement.Application.DTOs;
+namespace AssetManagement.Application.DTOs.AssetDTOs;
 
 public class AssetSummaryDto
 {

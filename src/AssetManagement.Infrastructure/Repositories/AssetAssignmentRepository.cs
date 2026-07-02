@@ -1,4 +1,5 @@
 using AssetManagement.Application.DTOs;
+using AssetManagement.Application.DTOs.AssignmentDTOs;
 using AssetManagement.Application.Interfaces;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Infrastructure.Data;

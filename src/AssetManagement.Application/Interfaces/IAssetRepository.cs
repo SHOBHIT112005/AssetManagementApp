@@ -1,4 +1,5 @@
 using AssetManagement.Application.DTOs;
+using AssetManagement.Application.DTOs.AssetDTOs;
 using AssetManagement.Domain.Entities;
 
 namespace AssetManagement.Application.Interfaces;

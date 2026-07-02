@@ -1,4 +1,4 @@
-namespace AssetManagement.Application.DTOs;
+namespace AssetManagement.Application.DTOs.AssignmentDTOs;
 
 public class AssetAssignmentHistoryDto
 {
