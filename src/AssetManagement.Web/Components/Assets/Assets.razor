@@ -5,45 +5,52 @@
 @using AssetManagement.Domain.Enums
 @inject IAssetService AssetService
 <h2>Assets</h2>
-@if (!AssetList.Any())
+<h3>Search Assets</h3>
+<InputSelect @bind-Value="Query.SearchField" class="form-select mb-3">
+    <option value="@AssetSearchField.AssetName">Asset Name</option>
+    <option value="@AssetSearchField.SerialNumber">Serial Number</option>
+</InputSelect>
+<InputText @bind-Value="Query.SearchTerm" placeholder="Search by asset name or serial number"
+           class="form-control mb-3" />
+<button class="btn btn-primary mb-3" @onclick="SearchAsync">Search</button>
+<h3>Filter Assets</h3>
+<InputSelect @bind-Value="Query.Status" class="form-select mb-3">
+    <option value="">All Statuses</option>
+    @foreach (AssetStatus status in AssetStatuses)
+    {
+        <option value="@status">@status</option>
+    }
+</InputSelect>
+<InputSelect @bind-Value="Query.AssetType" class="form-select mb-3">
+    <option value="">All Types</option>
+    @foreach (AssetType type in AssetTypes)
+    {
+        <option value="@type">@type</option>
+    }
+</InputSelect>
+<button class="btn btn-primary mb-3" @onclick="FilterAsync">Filter</button>
+<h3>Asset Summary</h3>
+<div>
+    <div>Total Assets : @AssetSummary.TotalAssets</div>
+    <div>Available Assets : @AssetSummary.AvailableAssets</div>
+    <div>Assigned Assets : @AssetSummary.AssignedAssets</div>
+    <div>Under Repair Assets : @AssetSummary.UnderRepairAssets</div>
+    <div>Retired Assets : @AssetSummary.RetiredAssets</div>
+</div>
+<button class="btn btn-primary mb-3" @onclick="ResetAsync">Reset</button>
+@if (!PagedAssets.Items.Any())
 {
     <p>No assets found, try creating one.</p>
 }
 else
 {
-    <h3>Search Assets</h3>
-    <InputSelect @bind-Value="Query.SearchField" class="form-select mb-3">
-        <option value="@AssetSearchField.AssetName">Asset Name</option>
-        <option value="@AssetSearchField.SerialNumber">Serial Number</option>
-    </InputSelect>
-    <InputText @bind-Value="Query.SearchTerm" placeholder="Search by asset name or serial number" class="form-control mb-3" />
-    <button class="btn btn-primary mb-3" @onclick="LoadAssetsAsync">Search</button>
-    <h3>Filter Assets</h3>
-    <InputSelect @bind-Value="Query.Status" class="form-select mb-3">
-        <option value="">All Statuses</option>
-        @foreach (AssetStatus status in AssetStatuses)
-        {
-            <option value="@status">@status</option>
-        }
-    </InputSelect>
-    <InputSelect @bind-Value="Query.AssetType" class="form-select mb-3">
-        <option value="">All Types</option>
-        @foreach (AssetType type in AssetTypes)
-        {
-            <option value="@type">@type</option>
-        }
-    </InputSelect>
-    <button class="btn btn-primary mb-3" @onclick="LoadAssetsAsync">Filter</button>
-    <h3>Asset Summary</h3>
-    <div>
-        <div>Total Assets : @AssetSummary.TotalAssets</div>
-        <div>Available Assets : @AssetSummary.AvailableAssets</div>
-        <div>Assigned Assets : @AssetSummary.AssignedAssets</div>
-        <div>Under Repair Assets : @AssetSummary.UnderRepairAssets</div>
-        <div>Retired Assets : @AssetSummary.RetiredAssets</div>
-    </div>
-    <button class="btn btn-primary mb-3" @onclick="ResetAsync">Reset</button>
     <h3>Asset List</h3>
+    <p>
+        Showing @PagedAssets.Items.Count() of @PagedAssets.TotalCount assets :
+    </p>
+    <button disabled="@(PagedAssets.PageNumber == 1)" @onclick="PreviousPage">Previous</button>
+    <p>Page @PagedAssets.PageNumber of @PagedAssets.TotalPages</p>
+    <button disabled="@(PagedAssets.PageNumber == PagedAssets.TotalPages)" @onclick="NextPage">Next</button>
     <table class="table">
         <thead>
             <tr>
@@ -57,9 +64,8 @@ else
                 <th>Action</th>
             </tr>
         </thead>
-
         <tbody>
-            @foreach (Asset asset in AssetList)
+            @foreach (Asset asset in PagedAssets.Items)
             {
                 <tr>
                     <td>@asset.AssetName</td>
@@ -105,7 +111,7 @@ else
 </NavLink>
 
 @code {
-    private IEnumerable<Asset> AssetList { get; set; } = new List<Asset>();
+    private PagedResultDto<Asset> PagedAssets { get; set; } = new PagedResultDto<Asset>();
     private AssetSummaryDto AssetSummary { get; set; } = new AssetSummaryDto();
     private AssetQueryDto Query { get; set; } = new AssetQueryDto();
 
@@ -114,8 +120,34 @@ else
     private IEnumerable<AssetType> AssetTypes => Enum.GetValues<AssetType>();
     private async Task LoadAssetsAsync()
     {
-        AssetList = await AssetService.GetAllAssetsAsync(queryDto: Query);
-        AssetSummary = await AssetService.GetAssetSummaryServiceAsync(queryDto : Query);
+        PagedAssets = await AssetService.GetAllAssetsAsync(queryDto: Query);
+        AssetSummary = await AssetService.GetAssetSummaryServiceAsync(queryDto: Query);
+    }
+    private async Task PreviousPage()
+    {
+        if (PagedAssets.PageNumber > 1)
+        {
+            Query.PageNumber--;
+            await LoadAssetsAsync();
+        }
+    }
+    private async Task NextPage()
+    {
+        if (PagedAssets.PageNumber < PagedAssets.TotalPages)
+        {
+            Query.PageNumber++;
+            await LoadAssetsAsync();
+        }
+    }
+    private async Task SearchAsync()
+    {
+        Query.PageNumber = 1;
+        await LoadAssetsAsync();
+    }
+    private async Task FilterAsync()
+    {
+        Query.PageNumber = 1;
+        await LoadAssetsAsync();
     }
     private async Task ResetAsync()
     {

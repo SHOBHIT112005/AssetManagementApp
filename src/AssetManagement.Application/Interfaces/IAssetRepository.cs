@@ -5,7 +5,7 @@ namespace AssetManagement.Application.Interfaces;
 
 public interface IAssetRepository
 {
-    Task<IEnumerable<Asset>> GetAllAsync(AssetQueryDto queryDto);
+    Task<PagedResultDto<Asset>> GetAllAsync(AssetQueryDto queryDto);
 
     Task<Asset?> GetByIdAsync(int id);
 

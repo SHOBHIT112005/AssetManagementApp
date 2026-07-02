@@ -8,9 +8,14 @@ public class EmployeeService : IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
 
-    public EmployeeService(IEmployeeRepository employeeRepository)
+    private readonly IAssetRepository _assetRepository;
+    private readonly IAssetAssignmentRepository _assetassignmentRepository;
+
+    public EmployeeService(IEmployeeRepository employeeRepository, IAssetRepository assetRepository, IAssetAssignmentRepository assetassignmentRepository)
     {
         _employeeRepository = employeeRepository;
+        _assetRepository = assetRepository;
+        _assetassignmentRepository = assetassignmentRepository;
     }
 
     public Task<IEnumerable<Employee>> GetAllEmployeesAsync()
@@ -70,14 +75,28 @@ public class EmployeeService : IEmployeeService
     public async Task DeactivateEmployeeAsync(int id)
     {
         var employee = await _employeeRepository.GetByIdAsync(id);
-
         if (employee == null)
         {
             throw new ArgumentException("Not a valid employee Id, employee not found.");
         }
+        var assignments = await _assetassignmentRepository.GetByEmployeeIdAsync(id);
+        if (assignments.Any())
+        {
+            foreach (var assetAssignment in assignments.Where(a => a.ReturnDate == null))
+            {
+                var asset = await _assetRepository.GetByIdAsync(assetAssignment.AssetId);
 
+                if (asset is not null)
+                {
+                    asset.Status = AssetStatus.Available;
+                    await _assetRepository.UpdateAsync(asset);
+                }
+
+                assetAssignment.ReturnDate = DateOnly.FromDateTime(DateTime.Today);
+                await _assetassignmentRepository.UpdateAsync(assetAssignment);
+            }
+        }
         employee.Status = EmployeeStatus.Inactive;
-
         await _employeeRepository.UpdateAsync(employee);
     }
     public async Task ActivateEmployeeAsync(int id)

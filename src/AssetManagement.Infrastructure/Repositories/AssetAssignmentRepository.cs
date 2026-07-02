@@ -31,9 +31,16 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(AssetAssignment assetAssignment)
+    public async Task UpdateAsync(AssetAssignment assignment)
     {
-        _context.AssetAssignments.Update(assetAssignment);
+        var existingAssignment = await _context.AssetAssignments.FindAsync(assignment.Id);
+
+        if (existingAssignment is null)
+            return;
+
+        existingAssignment.ReturnDate = assignment.ReturnDate;
+        existingAssignment.Notes = assignment.Notes;
+
         await _context.SaveChangesAsync();
     }
 

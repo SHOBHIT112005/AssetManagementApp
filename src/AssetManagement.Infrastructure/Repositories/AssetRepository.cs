@@ -16,7 +16,7 @@ public class AssetRepository : IAssetRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Asset>> GetAllAsync(AssetQueryDto queryDto)
+    public async Task<PagedResultDto<Asset>> GetAllAsync(AssetQueryDto queryDto)
     {
         var query = _context.Assets.AsNoTracking().AsQueryable();
 
@@ -44,8 +44,15 @@ public class AssetRepository : IAssetRepository
         {
             query = query.Where(a => a.Type == queryDto.AssetType.Value);
         }
-
-        return await query.ToListAsync();
+        var totalCount = await query.CountAsync();
+        var assets = await query.Skip((queryDto.PageNumber - 1) * queryDto.PageSize).Take(queryDto.PageSize).ToListAsync();
+        return new PagedResultDto<Asset>
+        {
+            Items = assets,
+            TotalCount = totalCount,
+            PageNumber = queryDto.PageNumber,
+            PageSize = queryDto.PageSize
+        };
     }
 
     public async Task<Asset?> GetByIdAsync(int id)

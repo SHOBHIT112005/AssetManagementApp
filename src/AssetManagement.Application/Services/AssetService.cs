@@ -14,8 +14,13 @@ public class AssetService : IAssetService
         _assetRepository = assetRepository;
     }
 
-    public Task<IEnumerable<Asset>> GetAllAssetsAsync(AssetQueryDto queryDto)
+    public Task<PagedResultDto<Asset>> GetAllAssetsAsync(AssetQueryDto queryDto)
     {
+        if (queryDto.PageNumber < 1)
+            queryDto.PageNumber = 1;
+
+        if (queryDto.PageSize < 1)
+            queryDto.PageSize = 10;
         return _assetRepository.GetAllAsync(queryDto);
     }
 
@@ -65,14 +70,14 @@ public class AssetService : IAssetService
         await _assetRepository.UpdateAsync(existingAsset);
     }
 
-    public async Task ChangeAssetStatusAsync(int id,AssetStatus newStatus)
+    public async Task ChangeAssetStatusAsync(int id, AssetStatus newStatus)
     {
         var asset = await _assetRepository.GetByIdAsync(id);
         if (asset == null)
         {
             throw new ArgumentException("Not a valid asset Id, asset not found.");
         }
-        
+
         asset.Status = newStatus;
         await _assetRepository.UpdateAsync(asset);
     }
