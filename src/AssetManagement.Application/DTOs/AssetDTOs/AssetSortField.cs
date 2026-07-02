@@ -1,10 +1,7 @@
-namespace AssetManagement.Application.DTOs.AssetDTOs
+public enum AssetSortField
 {
-    public enum AssetSortField
-    {
-        Name,
-        PurchaseDate,
-        WarrentyExpiryDate,
-        Status
-    }
+    AssetName,
+    PurchaseDate,
+    WarrantyExpiryDate,
+    Status
 }

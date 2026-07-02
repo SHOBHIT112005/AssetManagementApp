@@ -13,7 +13,6 @@
 </InputSelect>
 <InputText @bind-Value="Query.SearchTerm" placeholder="Search by asset name or serial number"
            class="form-control mb-3" />
-<button class="btn btn-primary mb-3" @onclick="SearchAsync">Search</button>
 <h3>Filter Assets</h3>
 <InputSelect @bind-Value="Query.Status" class="form-select mb-3">
     <option value="">All Statuses</option>
@@ -29,7 +28,7 @@
         <option value="@type">@type</option>
     }
 </InputSelect>
-<button class="btn btn-primary mb-3" @onclick="FilterAsync">Filter</button>
+<button class="btn btn-primary mb-3" @onclick="SearchFilterAsync">Search / Filter</button>
 <h3>Asset Summary</h3>
 <div>
     <div>Total Assets : @AssetSummary.TotalAssets</div>
@@ -55,12 +54,32 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Asset Name</th>
-                <th>Type</th>
-                <th>Serial Number</th>
-                <th>Purchase Date</th>
-                <th>Warranty Expiry Date</th>
-                <th>Status</th>
+                <th>
+                    <button @onclick="() => SortAsync(AssetSortField.AssetName)">
+                        Asset Name @GetSortIcon(AssetSortField.AssetName)
+                    </button>
+                </th>
+                <th>
+                    Type
+                </th>
+                <th>
+                    Serial Number
+                </th>
+                <th>
+                    <button @onclick="() => SortAsync(AssetSortField.PurchaseDate)">
+                        Purchase Date @GetSortIcon(AssetSortField.PurchaseDate)
+                    </button>
+                </th>
+                <th>
+                    <button @onclick="() => SortAsync(AssetSortField.WarrantyExpiryDate)">
+                        Warranty Expiry Date @GetSortIcon(AssetSortField.WarrantyExpiryDate)
+                    </button>
+                </th>
+                <th>
+                    <button @onclick="() => SortAsync(AssetSortField.Status)">
+                        Status @GetSortIcon(AssetSortField.Status)
+                    </button>
+                </th>
                 <th>Condition</th>
                 <th>Action</th>
             </tr>
@@ -140,15 +159,33 @@ else
             await LoadAssetsAsync();
         }
     }
-    private async Task SearchAsync()
+    private async Task SearchFilterAsync()
     {
         Query.PageNumber = 1;
         await LoadAssetsAsync();
     }
-    private async Task FilterAsync()
+
+    private async Task SortAsync(AssetSortField sortField)
     {
         Query.PageNumber = 1;
+        if (Query.SortField == sortField)
+        {
+            Query.SortDirection = (Query.SortDirection == SortDirection.Ascending) ? SortDirection.Descending : SortDirection.Ascending;
+        }
+        else
+        {
+            Query.SortField = sortField;
+            Query.SortDirection = SortDirection.Ascending;
+        }
         await LoadAssetsAsync();
+    }
+    private string GetSortIcon(AssetSortField field)
+    {
+        if (Query.SortField == field)
+        {
+            return Query.SortDirection == SortDirection.Ascending ? "▲" : "▼";
+        }
+        return string.Empty;
     }
     private async Task ResetAsync()
     {

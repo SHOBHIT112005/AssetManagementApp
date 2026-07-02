@@ -20,7 +20,6 @@ public class AssetRepository : IAssetRepository
     public async Task<PagedResultDto<Asset>> GetAllAsync(AssetQueryDto queryDto)
     {
         var query = _context.Assets.AsNoTracking().AsQueryable();
-
         if (!string.IsNullOrEmpty(queryDto.SearchTerm))
         {
             switch (queryDto.SearchField)
@@ -44,6 +43,30 @@ public class AssetRepository : IAssetRepository
         if (queryDto.AssetType.HasValue)
         {
             query = query.Where(a => a.Type == queryDto.AssetType.Value);
+        }
+        if (!queryDto.SortField.HasValue)
+        {
+            query = query.OrderBy(a => a.AssetName);
+        }
+        else
+        {
+            switch (queryDto.SortField.Value)
+            {
+                case AssetSortField.AssetName:
+                    query = queryDto.SortDirection == SortDirection.Ascending ? query.OrderBy(a => a.AssetName) : query.OrderByDescending(a => a.AssetName);
+                    break;
+                case AssetSortField.Status:
+                    query = queryDto.SortDirection == SortDirection.Ascending ? query.OrderBy(a => a.Status) : query.OrderByDescending(a => a.Status);
+                    break;
+                case AssetSortField.PurchaseDate:
+                    query = queryDto.SortDirection == SortDirection.Ascending ? query.OrderBy(a => a.PurchaseDate) : query.OrderByDescending(a => a.PurchaseDate);
+                    break;
+                case AssetSortField.WarrantyExpiryDate:
+                    query = queryDto.SortDirection == SortDirection.Ascending ? query.OrderBy(a => a.WarrantyExpiryDate) : query.OrderByDescending(a => a.WarrantyExpiryDate);
+                    break;
+                default:
+                    break;
+            }
         }
         var totalCount = await query.CountAsync();
         var assets = await query.Skip((queryDto.PageNumber - 1) * queryDto.PageSize).Take(queryDto.PageSize).ToListAsync();
@@ -93,12 +116,12 @@ public class AssetRepository : IAssetRepository
     {
         var query = _context.Assets.AsNoTracking().AsQueryable();
 
-        if(queryDto.Status.HasValue)
+        if (queryDto.Status.HasValue)
         {
             query = query.Where(a => a.Status == queryDto.Status.Value);
         }
 
-        if(queryDto.AssetType.HasValue)
+        if (queryDto.AssetType.HasValue)
         {
             query = query.Where(a => a.Type == queryDto.AssetType.Value);
         }
