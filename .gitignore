@@ -17,4 +17,4 @@ __pycache__/
 artifacts/
 
 # Ignore tests if required by previous setup
-# tests/
+tests/
