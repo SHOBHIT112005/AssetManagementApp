@@ -1,0 +1,51 @@
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+<div class="logo">
+    Asset Management
+</div>
+
+<nav>
+    <ul class="nav-menu">
+        <li><NavLink class="nav-item" href="/" Match="NavLinkMatch.All">🏠 Home</NavLink></li>
+        <li><NavLink class="nav-item" href="/assets">💻 Assets</NavLink></li>
+        <li><NavLink class="nav-item" href="/employees">👥 Employees</NavLink></li>
+        <li><NavLink class="nav-item" href="/assignments">📋 Assignments</NavLink></li>
+        <li><NavLink class="nav-item" href="/import">📥 Import</NavLink></li>
+        <li>
+            <form method="post" action="/api/account/logout" class="w-100">
+                <AntiforgeryToken />
+                <button type="submit" class="nav-item w-100 border-0 bg-transparent text-start" style="cursor: pointer;">
+                    🚪 Logout
+                </button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div style="margin-top: auto; text-align: center;">
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);">
+        <p style="font-size: 0.8rem; color: #ffffff; font-weight: bold; margin: 0 0 10px 0;">Need Help?</p>
+        <button style="background: var(--brand-primary); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Ask AI Agent</button>
+    </div>
+</div>
+
+@code {
+    private string? currentUrl;
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -1,0 +1,120 @@
+@page "/employees/create"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using AssetManagement.Application.Interfaces.Assets
+@using AssetManagement.Application.Interfaces.Assignments
+@using AssetManagement.Application.Interfaces.Employees
+@using AssetManagement.Application.Interfaces.Data
+@using AssetManagement.Application.Interfaces.Agent
+@using AssetManagement.Domain.Entities
+@using Microsoft.AspNetCore.Components.Forms
+@using AssetManagement.Domain.Enums.Assets
+@using AssetManagement.Domain.Enums.Assignments
+@using AssetManagement.Domain.Enums.Employees
+
+@inject IEmployeeService EmployeeService
+
+@inject NavigationManager Navigation
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+<EditForm Model="NewEmployee" OnValidSubmit="SaveEmployee" FormName="CreateEmployee">
+    <DataAnnotationsValidator />
+
+    <h2>Add a new Employee</h2>
+    <div class="mb-3">
+        <label for="fullName" class="form-label">
+            Full Name <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="fullName" class="form-control" @bind-Value="NewEmployee.FullName"
+                   placeholder="Enter employee full name" />
+        <ValidationMessage For="@(() => NewEmployee.FullName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">
+            Email <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="email" class="form-control" @bind-Value="NewEmployee.Email" placeholder="Enter email address" />
+        <ValidationMessage For="@(() => NewEmployee.Email)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="phoneNumber" class="form-label">
+            Phone Number <span class="text-danger">*</span>
+        </label>
+
+        <InputText id="phoneNumber" class="form-control" @bind-Value="NewEmployee.PhoneNumber"
+                   placeholder="Enter phone number" />
+        <ValidationMessage For="@(() => NewEmployee.PhoneNumber)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="department" class="form-label">
+            Department <span class="text-danger">*</span>
+        </label>
+
+        <InputSelect id="department" class="form-select" @bind-Value="NewEmployee.Department">
+
+            <option value="">-- Select Department --</option>
+
+            @foreach (Department department in Enum.GetValues<Department>())
+            {
+                <option value="@department">
+                    @department
+                </option>
+            }
+
+        </InputSelect>
+        <ValidationMessage For="@(() => NewEmployee.Department)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="designation" class="form-label">
+            Designation <span class="text-danger">*</span>
+        </label>
+
+        <InputSelect id="designation" class="form-select" @bind-Value="NewEmployee.Designation">
+
+            <option value="">-- Select Designation --</option>
+
+            @foreach (EmployeeDesignation designation in Enum.GetValues<EmployeeDesignation>())
+            {
+                <option value="@designation">
+                    @designation
+                </option>
+            }
+
+        </InputSelect>
+        <ValidationMessage For="@(() => NewEmployee.Designation)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Save
+    </button>
+</EditForm>
+
+@code {
+    private Employee NewEmployee = new Employee();
+    private string ErrorMessage { get; set; } = string.Empty;
+    private async Task SaveEmployee()
+    {
+        try
+        {
+            await EmployeeService.CreateEmployeeAsync(NewEmployee);
+            Navigation.NavigateTo(uri: "/employees");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An unexpected error occurred while creating the employee: {ex.Message}";
+            @* Console.WriteLine(value: $"An unexpected error occurred while creating the employee: {ex.Message}"); *@
+        }
+    }
+}
+
+

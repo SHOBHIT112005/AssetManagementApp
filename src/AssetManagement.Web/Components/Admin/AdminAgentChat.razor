@@ -1,0 +1,151 @@
+@using AssetManagement.Application.Services
+@using AssetManagement.Application.Interfaces.Assets
+@using AssetManagement.Application.Interfaces.Assignments
+@using AssetManagement.Application.Interfaces.Employees
+@using AssetManagement.Application.Interfaces.Data
+@using AssetManagement.Application.Interfaces.Agent
+@inject AdminAgentService AdminAgent
+
+<div class="admin-agent @(isOpen ? "is-open" : "is-closed")">
+    @if (!isOpen)
+    {
+        <button type="button" class="admin-agent__launcher" @onclick="OpenChat" title="Open admin assistant">
+            <span>AI</span>
+        </button>
+    }
+    else
+    {
+        <section class="admin-agent__panel" aria-label="Admin assistant">
+            <header class="admin-agent__header">
+                <div>
+                    <strong>Admin Assistant</strong>
+                    <span>Asset reports & actions</span>
+                </div>
+                <button type="button" class="admin-agent__icon-button" @onclick="MinimizeChat" title="Minimize chat">_</button>
+            </header>
+
+            <div class="admin-agent__messages">
+                @foreach (var message in messages)
+                {
+                    <div class="admin-agent__message admin-agent__message--@message.Role">
+                        <div>@message.Text</div>
+
+                        @if (message.Response is not null)
+                        {
+                            @if (message.Response.Rows.Count > 0)
+                            {
+                                <div class="admin-agent__table-wrap">
+                                    <table class="admin-agent__table">
+                                        <thead>
+                                            <tr>
+                                                @foreach (var column in message.Response.Columns)
+                                                {
+                                                    <th>@column</th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var row in message.Response.Rows)
+                                            {
+                                                <tr>
+                                                    <td>@row.First</td>
+                                                    <td>@row.Second</td>
+                                                    <td>@row.Third</td>
+                                                    <td>@row.Fourth</td>
+                                                    <td>@row.Fifth</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+
+                            @if (message.Response.IsTruncated)
+                            {
+                                <small class="admin-agent__note">Showing the first @message.Response.Rows.Count rows.</small>
+                            }
+
+                            @if (message.Response.Suggestions.Count > 0)
+                            {
+                                <div class="admin-agent__suggestions">
+                                    @foreach (var suggestion in message.Response.Suggestions.Take(2))
+                                    {
+                                        <button type="button" @onclick="() => AskSuggestion(suggestion)">@suggestion</button>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+
+                @if (isLoading)
+                {
+                    <div class="admin-agent__message admin-agent__message--assistant">
+                        Checking asset data...
+                    </div>
+                }
+            </div>
+
+            <EditForm Model="this" OnSubmit="AskQuestion" class="admin-agent__composer">
+                <InputText @bind-Value="prompt" placeholder="Ask about assignments..." 
+                           disabled="@(isLoading)" />
+                <button type="submit" disabled="@(isLoading || string.IsNullOrWhiteSpace(prompt))">Send</button>
+            </EditForm>
+        </section>
+    }
+</div>
+
+@code {
+    private readonly List<ChatMessage> messages = [
+        new ChatMessage(Role: "assistant", Text: "Ask me for assignment reports, or information on assets and employees.", Response: null)
+    ];
+
+    private bool isOpen;
+    private bool isLoading;
+    private string prompt = string.Empty;
+
+    private void OpenChat()
+    {
+        isOpen = true;
+    }
+
+    private void MinimizeChat()
+    {
+        isOpen = false;
+    }
+
+    private async Task AskSuggestion(string suggestion)
+    {
+        prompt = suggestion;
+        await AskQuestion();
+    }
+
+    private async Task AskQuestion()
+    {
+        var question = prompt.Trim();
+        if (string.IsNullOrWhiteSpace(question) || isLoading)
+        {
+            return;
+        }
+
+        messages.Add(item: new ChatMessage(Role: "user", question, Response: null));
+        prompt = string.Empty;
+        isLoading = true;
+
+        try
+        {
+            var response = await AdminAgent.AskAsync(question);
+            messages.Add(new ChatMessage("assistant", response.Summary, response));
+        }
+        catch (Exception ex)
+        {
+            messages.Add(new ChatMessage("assistant", $"I could not run that report: {ex.Message}", null));
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private sealed record ChatMessage(string Role, string Text, AdminAgentResponse? Response);
+}

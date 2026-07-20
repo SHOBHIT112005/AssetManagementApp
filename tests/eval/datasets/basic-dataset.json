@@ -1,0 +1,18 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "supported_asset_reports",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "What asset management reports can you help me with?"}]
+      }
+    },
+    {
+      "eval_case_id": "laptop_assignment_prompt",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Please give me a list of all laptops that are assigned in past 2 months"}]
+      }
+    }
+  ]
+}

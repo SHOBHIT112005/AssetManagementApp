@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AssetManagement.Application/AssetManagement.Application.csproj" />
+    <Project Path="src/AssetManagement.Domain/AssetManagement.Domain.csproj" />
+    <Project Path="src/AssetManagement.Infrastructure/AssetManagement.Infrastructure.csproj" />
+    <Project Path="src/AssetManagement.Web/AssetManagement.Web.csproj" />
+  </Folder>
+</Solution>

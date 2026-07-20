@@ -1,0 +1,362 @@
+@page "/employees"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using AssetManagement.Application.DTOs
+@using AssetManagement.Application.DTOs.EmployeeDTOs
+@using AssetManagement.Application.Interfaces.Assets
+@using AssetManagement.Application.Interfaces.Assignments
+@using AssetManagement.Application.Interfaces.Employees
+@using AssetManagement.Application.Interfaces.Data
+@using AssetManagement.Application.Interfaces.Agent
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Domain.Enums.Assets
+@using AssetManagement.Domain.Enums.Assignments
+@using AssetManagement.Domain.Enums.Employees
+
+@inject IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Employees Dashboard</h2>
+    <NavLink class="btn btn-primary" href="/employees/create">
+        Create Employee +
+    </NavLink>
+</div>
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+@if (isLoading)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Employee Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm text-center h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Employees</h6>
+                    <h3 class="text-primary mb-0">@EmployeeSummary.TotalEmployees</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm text-center h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Active Employees</h6>
+                    <h3 class="text-success mb-0">@EmployeeSummary.ActiveEmployees</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm text-center h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Inactive Employees</h6>
+                    <h3 class="text-secondary mb-0">@EmployeeSummary.InactiveEmployees</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Search Field</label>
+                    <InputSelect @bind-Value="EmployeeQuery.SearchField" class="form-select">
+                        <option value="@EmployeeSearchField.FullName">Full Name</option>
+                        <option value="@EmployeeSearchField.Email">Email</option>
+                        <option value="@EmployeeSearchField.PhoneNumber">Phone</option>
+                    </InputSelect>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Search Term</label>
+                    <InputText @bind-Value="EmployeeQuery.SearchTerm" placeholder="Search..." class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <InputSelect @bind-Value="EmployeeQuery.Status" class="form-select">
+                        <option value="">All Statuses</option>
+                        @foreach (EmployeeStatus status in EmployeeStatuses)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Department</label>
+                    <InputSelect @bind-Value="EmployeeQuery.Department" class="form-select">
+                        <option value="">All Depts</option>
+                        @foreach (Department dept in Departments)
+                        {
+                            <option value="@dept">@dept</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Designation</label>
+                    <InputSelect @bind-Value="EmployeeQuery.Designation" class="form-select">
+                        <option value="">All</option>
+                        @foreach (EmployeeDesignation des in Designations)
+                        {
+                            <option value="@des">@des</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-2 d-flex">
+                    <button class="btn btn-primary w-100 me-2" @onclick="SearchFilterAsync">Filter</button>
+                    <button class="btn btn-outline-secondary w-100" @onclick="ResetAsync">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!PagedEmployees.Items.Any())
+    {
+        <div class="empty-state shadow-sm">
+            <h4>No employees found</h4>
+            <p>Try adjusting your filters or create a new employee.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Employee List Card -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Employee Directory</span>
+                <span class="text-muted small">Showing @PagedEmployees.Items.Count() of @PagedEmployees.TotalCount
+                    employees</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>
+                                    <button class="btn btn-link text-decoration-none p-0 text-dark fw-bold"
+                                            @onclick="() => SortAsync(EmployeeSortField.FullName)">
+                                        Full Name @GetSortIcon(EmployeeSortField.FullName)
+                                    </button>
+                                </th>
+                                <th>
+                                    <button class="btn btn-link text-decoration-none p-0 text-dark fw-bold"
+                                            @onclick="() => SortAsync(EmployeeSortField.Email)">
+                                        Email @GetSortIcon(EmployeeSortField.Email)
+                                    </button>
+                                </th>
+                                <th>Phone Number</th>
+                                <th>
+                                    <button class="btn btn-link text-decoration-none p-0 text-dark fw-bold"
+                                            @onclick="() => SortAsync(EmployeeSortField.Department)">
+                                        Department @GetSortIcon(EmployeeSortField.Department)
+                                    </button>
+                                </th>
+                                <th>Designation</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Employee employee in PagedEmployees.Items)
+                            {
+                                <tr>
+                                    <td class="align-middle fw-bold">@employee.FullName</td>
+                                    <td class="align-middle">@employee.Email</td>
+                                    <td class="align-middle">@employee.PhoneNumber</td>
+                                    <td class="align-middle">@employee.Department</td>
+                                    <td class="align-middle">@employee.Designation</td>
+                                    <td class="align-middle">
+                                        <span class="badge @(employee.Status == EmployeeStatus.Active ? "bg-success" : "bg-secondary")">
+                                            @employee.Status
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        @if (employee.Status == EmployeeStatus.Active)
+                                        {
+                                            <NavLink class="btn btn-sm btn-outline-primary" href="@($"/employees/edit/{employee.Id}")">Edit
+                                            </NavLink>
+                                            <button class="btn btn-sm btn-outline-danger ms-1"
+                                                    @onclick="() => DeactivateEmployee(employee.Id)">Deactivate</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-outline-success"
+                                                    @onclick="() => ActivateEmployee(employee.Id)">Activate</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (PagedEmployees.TotalPages > 1)
+                {
+                    <div class="card-footer bg-white d-flex justify-content-center">
+                        <ul class="pagination mb-0">
+                            <li class="page-item @(PagedEmployees.PageNumber == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PreviousPage">Previous</button>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Page @PagedEmployees.PageNumber of @PagedEmployees.TotalPages</span>
+                            </li>
+                            <li class="page-item @(PagedEmployees.PageNumber == PagedEmployees.TotalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="NextPage">Next</button>
+                            </li>
+                        </ul>
+                    </div>
+                }
+            </div>
+        }
+    }
+
+@code {
+    private bool isLoading = true;
+    private PagedResultDto<Employee> PagedEmployees { get; set; } = new PagedResultDto<Employee>();
+    private EmployeeSummaryDto EmployeeSummary { get; set; } = new EmployeeSummaryDto();
+    private EmployeeQueryDto EmployeeQuery { get; set; } = new EmployeeQueryDto();
+
+    private IEnumerable<EmployeeStatus> EmployeeStatuses => Enum.GetValues<EmployeeStatus>();
+    private IEnumerable<Department> Departments => Enum.GetValues<Department>();
+    private IEnumerable<EmployeeDesignation> Designations => Enum.GetValues<EmployeeDesignation>();
+    private string ErrorMessage { get; set; } = string.Empty;
+    private async Task LoadEmployeesAsync()
+    {
+        try
+        {
+            PagedEmployees = await EmployeeService.GetAllEmployeesAsync(EmployeeQuery);
+            EmployeeSummary = await EmployeeService.GetEmployeeSummaryServiceAsync(EmployeeQuery);
+        } 
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An unexpected error occurred while loading the employees: {ex.Message}";
+            // Console.WriteLine(value: $"An unexpected error occurred while loading the employees: {ex.Message}");
+        } 
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await LoadEmployeesAsync();
+        isLoading = false;
+    }
+
+    private async Task DeactivateEmployee(int id)
+    {
+        try
+        {
+            isLoading = true;
+            ErrorMessage = string.Empty;
+            await EmployeeService.DeactivateEmployeeAsync(id);
+            await LoadEmployeesAsync();
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "An unexpected error occurred while deactivating the employee. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ActivateEmployee(int id)
+    {
+        try
+        {
+            isLoading = true;
+            ErrorMessage = string.Empty;
+            await EmployeeService.ActivateEmployeeAsync(id);
+            await LoadEmployeesAsync();
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "An unexpected error occurred while activating the employee. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (PagedEmployees.PageNumber > 1)
+        {
+            isLoading = true;
+            EmployeeQuery.PageNumber--;
+            await LoadEmployeesAsync();
+            isLoading = false;
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (PagedEmployees.PageNumber < PagedEmployees.TotalPages)
+        {
+            isLoading = true;
+            EmployeeQuery.PageNumber++;
+            await LoadEmployeesAsync();
+            isLoading = false;
+        }
+    }
+
+    private async Task SearchFilterAsync()
+    {
+        isLoading = true;
+        EmployeeQuery.PageNumber = 1;
+        await LoadEmployeesAsync();
+        isLoading = false;
+    }
+
+    private async Task SortAsync(EmployeeSortField sortField)
+    {
+        isLoading = true;
+        EmployeeQuery.PageNumber = 1;
+        if (EmployeeQuery.SortField == sortField)
+        {
+            EmployeeQuery.SortDirection = (EmployeeQuery.SortDirection == SortDirection.Ascending) ? SortDirection.Descending :
+SortDirection.Ascending;
+        }
+        else
+        {
+            EmployeeQuery.SortField = sortField;
+            EmployeeQuery.SortDirection = SortDirection.Ascending;
+        }
+        await LoadEmployeesAsync();
+        isLoading = false;
+    }
+
+    private string GetSortIcon(EmployeeSortField field)
+    {
+        if (EmployeeQuery.SortField == field)
+        {
+            return EmployeeQuery.SortDirection == SortDirection.Ascending ? "▲" : "▼";
+        }
+        return string.Empty;
+    }
+
+    private async Task ResetAsync()
+    {
+        isLoading = true;
+        EmployeeQuery = new EmployeeQueryDto();
+        await LoadEmployeesAsync();
+        isLoading = false;
+    }
+}
+

@@ -1,0 +1,147 @@
+@page "/employees/edit/{Id:int}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using AssetManagement.Application.Interfaces.Assets
+@using AssetManagement.Application.Interfaces.Assignments
+@using AssetManagement.Application.Interfaces.Employees
+@using AssetManagement.Application.Interfaces.Data
+@using AssetManagement.Application.Interfaces.Agent
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Domain.Enums.Assets
+@using AssetManagement.Domain.Enums.Assignments
+@using AssetManagement.Domain.Enums.Employees
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject IEmployeeService EmployeeService
+
+@inject NavigationManager Navigation
+
+
+<h2>Edit Employee</h2>
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+@if (employee == null)
+{
+    <p>Loading employee details, please wait....</p>
+}
+else
+{
+    <EditForm Model="employee" OnValidSubmit="UpdateEmployee" FormName="EditEmployee">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label for="fullName" class="form-label">
+                Full Name <span class="text-danger">*</span>
+            </label>
+
+            <InputText id="fullName" class="form-control" @bind-Value="employee.FullName" />
+            <ValidationMessage For="@(() => employee.FullName)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="department" class="form-label">
+                Department <span class="text-danger">*</span>
+            </label>
+
+            <InputSelect id="department" class="form-select" @bind-Value="employee.Department">
+
+                <option value="">-- Select Department --</option>
+
+                @foreach (Department department in Enum.GetValues<Department>())
+                {
+                    <option value="@department">
+                        @department
+                    </option>
+                }
+
+            </InputSelect>
+            <ValidationMessage For="@(() => employee.Department)" />
+        </div>
+
+        <div>
+            <label for="designation" class="form-label">
+                Designation <span class="text-danger">*</span>
+            </label>
+
+            <InputSelect id="designation" class="form-select" @bind-Value="employee.Designation">
+
+                <option value="">-- Select Designation --</option>
+
+                @foreach (EmployeeDesignation designation in Enum.GetValues<EmployeeDesignation>())
+                {
+                    <option value="@designation">
+                        @designation
+                    </option>
+                }
+
+            </InputSelect>
+            <ValidationMessage For="@(() => employee.Designation)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="phoneNumber" class="form-label">
+                Phone Number <span class="text-danger">*</span>
+            </label>
+
+            <InputText id="phoneNumber" class="form-control" @bind-Value="employee.PhoneNumber" />
+            <ValidationMessage For="@(() => employee.PhoneNumber)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">
+                Email <span class="text-danger">*</span>
+            </label>
+
+            <InputText id="email" class="form-control" @bind-Value="employee.Email" />
+            <ValidationMessage For="@(() => employee.Email)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" disabled="@_saving">
+            Save
+        </button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Employee? employee;
+    private string ErrorMessage { get; set; } = string.Empty;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            employee = await EmployeeService.GetEmployeeByIdOrThrowAsync(Id);
+        }
+        catch (ArgumentException)
+        {
+            Navigation.NavigateTo(uri: "/employees");
+        }
+    }
+
+    private async Task UpdateEmployee()
+    {
+        if (_saving) return;
+        _saving = true;
+        try
+        {
+            await EmployeeService.UpdateEmployeeAsync(employee!);
+            Navigation.NavigateTo(uri: "/employees");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An unexpected error occurred while updating the employee: {ex.Message}";
+            @* Console.WriteLine(value: $"An unexpected error occurred while updating the employee: {ex.Message}"); *@
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}
+

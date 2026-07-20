@@ -1,0 +1,20 @@
+# Binaries
+bin/
+obj/
+src/AssetManagement.Web/App_Data/
+
+# Architecture and Spec Guides
+ApplicationDocs/
+
+# Python and Environment
+.env
+.venv/
+.pytest_cache/
+__pycache__/
+
+# IDEs and Tools
+.vs/
+artifacts/
+
+# Ignore tests if required by previous setup
+# tests/

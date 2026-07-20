@@ -1,0 +1,213 @@
+@page "/assets/assign/{assetId:int}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using AssetManagement.Domain.Entities
+@using AssetManagement.Domain.Enums.Assets
+@using AssetManagement.Domain.Enums.Assignments
+@using AssetManagement.Domain.Enums.Employees
+@using AssetManagement.Application.Interfaces.Assets
+@using AssetManagement.Application.Interfaces.Assignments
+@using AssetManagement.Application.Interfaces.Employees
+@using AssetManagement.Application.Interfaces.Data
+@using AssetManagement.Application.Interfaces.Agent
+
+@inject IEmployeeService EmployeeService
+@inject IAssetService AssetService
+@inject IAssetAssignmentService AssetAssignmentService
+@inject NavigationManager Navigation
+
+<h2>Assign Asset :</h2>
+@if (SelectedAsset is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Asset Name</th>
+                <th>Type</th>
+                <th>Serial Number</th>
+                <th>Purchase Date</th>
+                <th>Warranty Expiry Date</th>
+                <th>Condition</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>@SelectedAsset.AssetName</td>
+                <td>@SelectedAsset.Type</td>
+                <td>@SelectedAsset.SerialNumber</td>
+                <td>@SelectedAsset.PurchaseDate.ToString(format: "dd-MM-yyyy")</td>
+                <td>@SelectedAsset.WarrantyExpiryDate.ToString(format: "dd-MM-yyyy")</td>
+                <td>@SelectedAsset.Condition</td>
+            </tr>
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No asset selected.</p>
+}
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+@if (SelectedAsset != null && (SelectedAsset.Condition == AssetCondition.Damaged || SelectedAsset.Condition == AssetCondition.NeedsRepair))
+{
+    <div class="alert alert-warning">
+        <strong>Warning:</strong> This asset is currently marked as <strong>@SelectedAsset.Condition</strong>.
+        @if (SelectedAsset.Condition == AssetCondition.Damaged)
+        {
+            <span>Consider changing its status to <strong>Retired</strong> rather than assigning it.</span>
+        }
+        else
+        {
+            <span>Consider changing its status to <strong>Under Repair</strong> rather than assigning it.</span>
+        }
+    </div>
+}
+
+<EditForm Model="NewAssignment" FormName="AssignAsset" OnValidSubmit="CreateAssignment">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Filter by Department</label>
+        <select @bind="SelectedDepartmentStr" class="form-select">
+            <option value="">-- All Departments --</option>
+            @foreach (Department dept in AvailableDepartments)
+            {
+                <option value="@dept">@dept</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Filter by Designation</label>
+        <select @bind="SelectedDesignationStr" class="form-select">
+            <option value="">-- All Designations --</option>
+            @foreach (EmployeeDesignation desig in AvailableDesignations)
+            {
+                <option value="@desig">@desig</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="employeeId" class="form-label">
+            Select an employee <span class="text-danger">*</span>
+        </label>
+        <InputSelect id="employeeId" @bind-Value="NewAssignment.EmployeeId" class="form-select">
+            <option value="0">-- Select Employee --</option>
+            @foreach (Employee employee in FilteredEmployees)
+            {
+                <option value="@employee.Id">
+                    @employee.FullName (@employee.Department - @employee.Designation)
+                </option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => NewAssignment.EmployeeId)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Assignment Date</label>
+        <InputDate @bind-Value="NewAssignment.AssignmentDate" TValue="DateOnly" class="form-control" min="2010-01-01" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        <ValidationMessage For="@(() => NewAssignment.AssignmentDate)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@_saving">
+        Assign Asset
+    </button>
+</EditForm>
+
+
+@code {
+    [Parameter] public int assetId { get; set; }
+
+    private AssetAssignment NewAssignment = new AssetAssignment()
+    {
+        AssignmentDate = DateOnly.FromDateTime(DateTime.Today)
+    };
+
+    private Asset? SelectedAsset;
+
+    private IEnumerable<Employee> ActiveEmployees = Enumerable.Empty<Employee>();
+
+    private string SelectedDepartmentStr { get; set; } = string.Empty;
+    private string SelectedDesignationStr { get; set; } = string.Empty;
+
+    private Department? SelectedDepartment => Enum.TryParse<Department>(SelectedDepartmentStr, out Department d) ? d : null;
+    private EmployeeDesignation? SelectedDesignation => Enum.TryParse<EmployeeDesignation>(SelectedDesignationStr, out EmployeeDesignation d) ? d : null;
+
+    private IEnumerable<Department> AvailableDepartments => ActiveEmployees
+        .Select(e => e.Department)
+        .Distinct()
+        .OrderBy(d => d.ToString());
+
+    private IEnumerable<EmployeeDesignation> AvailableDesignations => ActiveEmployees
+        .Where(e => SelectedDepartment == null || e.Department == SelectedDepartment)
+        .Select(e => e.Designation)
+        .Distinct()
+        .OrderBy(d => d.ToString());
+
+    private IEnumerable<Employee> FilteredEmployees => ActiveEmployees
+        .Where(e => SelectedDepartment == null || e.Department == SelectedDepartment)
+        .Where(e => SelectedDesignation == null || e.Designation == SelectedDesignation)
+        .OrderBy(e => e.FullName);
+
+    private bool _saving;
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            SelectedAsset = await AssetService.GetAssetByIdOrThrowAsync(assetId);
+        }
+        catch (ArgumentException)
+        {
+            Navigation.NavigateTo(uri: "/assets");
+        }
+        try
+        {
+            ActiveEmployees = await EmployeeService.GetActiveEmployeesAsync();
+        } 
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An unexpected error occurred while loading the active employees : {ex.Message}";
+            // Console.WriteLine(value: $"An unexpected error occurred while loading the active employee");
+        }
+        NewAssignment.AssetId = assetId;
+    }
+
+    private async Task CreateAssignment()
+    {
+        if (_saving) return;
+        _saving = true;
+        try
+        {
+            await AssetAssignmentService.AssignAssetAsync(NewAssignment);
+            Navigation.NavigateTo(uri: "/assets");
+        } 
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (InvalidOperationException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "An unexpected error occurred while assigning the asset. Please try again.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}
+
+
+

@@ -1,0 +1,109 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import contextlib
+import os
+from collections.abc import AsyncIterator
+
+import google.auth
+from a2a.server.tasks import InMemoryTaskStore
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from google.adk.cli.fast_api import get_fast_api_app
+from google.adk.runners import Runner
+from google.cloud import logging as google_cloud_logging
+
+from admin_agent.app_utils import services
+from admin_agent.app_utils.a2a import attach_a2a_routes
+from admin_agent.app_utils.telemetry import setup_telemetry
+from admin_agent.app_utils.typing import Feedback
+
+import logging
+
+load_dotenv()
+try:
+    setup_telemetry()
+    _, project_id = google.auth.default()
+    logging_client = google_cloud_logging.Client()
+    logger = logging_client.logger(__name__)
+except Exception as e:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    logger.warning("GCP credentials not found, falling back to local logging. Error: %s", str(e))
+
+allow_origins = (
+    os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
+)
+
+AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    from admin_agent.agent import app as adk_app
+    from admin_agent.agent import root_agent
+
+    runner = Runner(
+        app=adk_app,
+        session_service=services.get_session_service(),
+        artifact_service=services.get_artifact_service(),
+        auto_create_session=True,
+    )
+    app.state.runner = runner
+    app.state.agent_app_name = adk_app.name
+    await attach_a2a_routes(
+        app,
+        agent=root_agent,
+        runner=runner,
+        task_store=InMemoryTaskStore(),
+        rpc_path=f"/a2a/{adk_app.name}",
+    )
+    yield
+
+
+app: FastAPI = get_fast_api_app(
+    agents_dir=AGENT_DIR,
+    web=True,
+    artifact_service_uri=services.ARTIFACT_SERVICE_URI,
+    allow_origins=allow_origins,
+    session_service_uri=services.SESSION_SERVICE_URI,
+    otel_to_cloud=False,
+    lifespan=lifespan,
+)
+app.title = "asset-admin-agent"
+app.description = "API for interacting with the Agent asset-admin-agent"
+
+
+@app.post("/feedback")
+def collect_feedback(feedback: Feedback) -> dict[str, str]:
+    """Collect and log feedback.
+
+    Args:
+        feedback: The feedback data to log
+
+    Returns:
+        Success message
+    """
+    if hasattr(logger, "log_struct"):
+        logger.log_struct(feedback.model_dump(), severity="INFO")
+    else:
+        logger.info(f"Feedback received: {feedback.model_dump()}")
+    return {"status": "success"}
+
+
+# Main execution
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

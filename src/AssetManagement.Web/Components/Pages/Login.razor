@@ -1,0 +1,384 @@
+@page "/login"
+@layout EmptyLayout
+
+<PageTitle>Login — Asset Management</PageTitle>
+
+<div class="login-page">
+    <!-- Decorative background blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="login-card">
+        <div class="login-left">
+            <div class="brand-label">ASSET MANAGEMENT</div>
+
+            <h1 class="login-title">Login</h1>
+            <p class="login-subtitle">Welcome to your asset management system.</p>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="login-error">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    @errorMessage
+                </div>
+            }
+
+            <form method="post" action="/api/account/login@(!string.IsNullOrWhiteSpace(returnUrl) ? $"?returnUrl={Uri.EscapeDataString(returnUrl)}" : "")">
+                <AntiforgeryToken />
+                <div class="form-group">
+                    <label for="userName">Username</label>
+                    <input type="text" id="userName" name="userName" placeholder="Enter your username" required autofocus />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required />
+                    </div>
+                </div>
+
+                <div class="form-group-check">
+                    <input type="checkbox" id="rememberMe" name="rememberMe" value="true" />
+                    <label for="rememberMe">Remember me</label>
+                </div>
+
+                <button type="submit" class="login-btn">LOGIN</button>
+            </form>
+        </div>
+
+        <div class="login-right">
+            <div class="illustration">
+                <!-- Dashboard illustration using SVG -->
+                <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background shape -->
+                    <ellipse cx="200" cy="260" rx="180" ry="20" fill="#e8eff8" opacity="0.5"/>
+
+                    <!-- Monitor -->
+                    <rect x="90" y="50" width="220" height="150" rx="8" fill="#1F2633" stroke="#2d3748" stroke-width="2"/>
+                    <rect x="100" y="60" width="200" height="125" rx="4" fill="#2d3748"/>
+
+                    <!-- Screen content - chart bars -->
+                    <rect x="120" y="140" width="20" height="35" rx="2" fill="#00B4B6" opacity="0.6"/>
+                    <rect x="150" y="120" width="20" height="55" rx="2" fill="#00B4B6" opacity="0.8"/>
+                    <rect x="180" y="100" width="20" height="75" rx="2" fill="#00B4B6"/>
+                    <rect x="210" y="130" width="20" height="45" rx="2" fill="#00B4B6" opacity="0.7"/>
+                    <rect x="240" y="110" width="20" height="65" rx="2" fill="#00B4B6" opacity="0.9"/>
+                    <rect x="270" y="125" width="20" height="50" rx="2" fill="#00B4B6" opacity="0.5"/>
+
+                    <!-- Pie chart -->
+                    <circle cx="160" cy="90" r="20" fill="none" stroke="#00B4B6" stroke-width="8" stroke-dasharray="40 86" opacity="0.8"/>
+                    <circle cx="160" cy="90" r="20" fill="none" stroke="#4dd0e1" stroke-width="8" stroke-dasharray="30 96" stroke-dashoffset="-40" opacity="0.6"/>
+                    <circle cx="160" cy="90" r="20" fill="none" stroke="#80deea" stroke-width="8" stroke-dasharray="16 110" stroke-dashoffset="-70" opacity="0.5"/>
+
+                    <!-- Data rows -->
+                    <rect x="200" y="75" width="80" height="6" rx="3" fill="#4a5568"/>
+                    <rect x="200" y="87" width="60" height="6" rx="3" fill="#4a5568" opacity="0.6"/>
+                    <rect x="200" y="99" width="70" height="6" rx="3" fill="#4a5568" opacity="0.4"/>
+
+                    <!-- Monitor stand -->
+                    <rect x="180" y="200" width="40" height="15" rx="2" fill="#cbd5e0"/>
+                    <rect x="170" y="213" width="60" height="5" rx="2" fill="#a0aec0"/>
+
+                    <!-- Person left -->
+                    <circle cx="70" cy="170" r="12" fill="#e2c9a8"/>
+                    <path d="M55 250 L55 200 Q55 185 70 185 Q85 185 85 200 L85 250" fill="#1F2633"/>
+                    <rect x="50" y="195" width="10" height="3" rx="1" fill="#00B4B6" opacity="0.6"/>
+
+                    <!-- Person right -->
+                    <circle cx="330" cy="175" r="12" fill="#e2c9a8"/>
+                    <path d="M315 255 L315 205 Q315 190 330 190 Q345 190 345 205 L345 255" fill="#2d3748"/>
+                    <rect x="340" y="200" width="10" height="3" rx="1" fill="#00B4B6" opacity="0.6"/>
+
+                    <!-- Floating elements -->
+                    <circle cx="50" cy="70" r="15" fill="#00B4B6" opacity="0.15"/>
+                    <circle cx="350" cy="50" r="10" fill="#00B4B6" opacity="0.1"/>
+                    <circle cx="320" cy="90" r="6" fill="#1F2633" opacity="0.12"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    .login-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #eef2f7 0%, #dce6f0 50%, #c9d9eb 100%);
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Decorative blobs */
+    .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        z-index: 0;
+    }
+
+    .blob-1 {
+        width: 400px;
+        height: 400px;
+        background: rgba(0, 180, 182, 0.12);
+        top: -100px;
+        right: -100px;
+    }
+
+    .blob-2 {
+        width: 300px;
+        height: 300px;
+        background: rgba(31, 38, 51, 0.08);
+        bottom: -80px;
+        left: -80px;
+    }
+
+    .blob-3 {
+        width: 200px;
+        height: 200px;
+        background: rgba(0, 180, 182, 0.08);
+        top: 50%;
+        left: 30%;
+    }
+
+    /* Card */
+    .login-card {
+        display: flex;
+        max-width: 960px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid rgba(31, 38, 51, 0.12);
+        box-shadow:
+            0 4px 6px rgba(0, 0, 0, 0.04),
+            0 20px 60px rgba(31, 38, 51, 0.08);
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Left side - form */
+    .login-left {
+        flex: 1;
+        padding: 3rem 3.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .brand-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #1F2633;
+        margin-bottom: 2.5rem;
+        opacity: 0.6;
+    }
+
+    .login-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1F2633;
+        margin: 0 0 0.5rem;
+        line-height: 1.2;
+    }
+
+    .login-subtitle {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin: 0 0 2rem;
+        line-height: 1.5;
+    }
+
+    /* Error */
+    .login-error {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        animation: shake 0.3s ease-in-out;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    /* Form */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.4rem;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.7rem 0.9rem;
+        border: 1.5px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        color: #1F2633;
+        background: #fff;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .form-group input::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-group input:focus {
+        border-color: #00B4B6;
+        box-shadow: 0 0 0 3px rgba(0, 180, 182, 0.15);
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .form-group-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group-check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #00B4B6;
+        cursor: pointer;
+    }
+
+    .form-group-check label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .login-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 2.5rem;
+        background: #00B4B6;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 14px rgba(0, 180, 182, 0.3);
+    }
+
+    .login-btn:hover {
+        background: #009698;
+        box-shadow: 0 6px 20px rgba(0, 180, 182, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .login-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(0, 180, 182, 0.3);
+    }
+
+    /* Right side - illustration */
+    .login-right {
+        flex: 1.1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(160deg, rgba(0, 180, 182, 0.06) 0%, rgba(31, 38, 51, 0.04) 100%);
+        padding: 2rem;
+        position: relative;
+    }
+
+    .login-right::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: rgba(0, 180, 182, 0.08);
+        border-radius: 50%;
+        filter: blur(40px);
+    }
+
+    .illustration {
+        width: 100%;
+        max-width: 380px;
+    }
+
+    .illustration svg {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .login-card {
+            flex-direction: column;
+        }
+
+        .login-right {
+            display: none;
+        }
+
+        .login-left {
+            padding: 2.5rem 2rem;
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string? error { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? returnUrl { get; set; }
+
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        errorMessage = error switch
+        {
+            "invalid" => "Invalid username or password.",
+            "locked" => "Your account has been locked. Please try again later.",
+            "denied" => "Access denied. You do not have permission.",
+            _ => null
+        };
+    }
+}
