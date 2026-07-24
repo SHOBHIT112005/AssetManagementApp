@@ -16,7 +16,7 @@ public record AssetAssignmentHistoryDto
 
     public bool IsReturned { get; set; }
 
-    // Missing properties from HEAD query:
+
     public string EmployeeNumber { get; set; } = string.Empty;
     public string EmployeeEmail { get; set; } = string.Empty;
     public AssetManagement.Domain.Enums.Employees.Department EmployeeDepartment { get; set; }

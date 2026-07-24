@@ -1,14 +1,9 @@
 using AssetManagement.Application.DTOs;
 using AssetManagement.Application.DTOs.AssetDTOs;
 using AssetManagement.Application.Interfaces.Assets;
-using AssetManagement.Application.Interfaces.Assignments;
-using AssetManagement.Application.Interfaces.Employees;
 using AssetManagement.Application.Interfaces.Data;
-using AssetManagement.Application.Interfaces.Agent;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums.Assets;
-using AssetManagement.Domain.Enums.Assignments;
-using AssetManagement.Domain.Enums.Employees;
 using AssetManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Dapper;
@@ -118,7 +113,6 @@ public class AssetRepository : IAssetRepository
         _context.Assets.Remove(asset);
     }
 
-    //Important function that provides a summary of assets based on their status and type, useful for dashboard displays and quick insights.
     public async Task<AssetSummaryDto> GetAssetSummaryAsync(AssetQueryDto queryDto)
     {
         var sql = @" 

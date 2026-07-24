@@ -13,8 +13,6 @@ public record ImportRowError(int Row, string Message);
 public record ImportParseResult<T>(List<(int Row, T Entity)> Valid, List<ImportRowError> Errors, int TotalRows);
 
 // Parses an uploaded .xlsx (ClosedXML) into Employee/Asset rows.
-// Row validation reuses each entity's own DataAnnotations via System.ComponentModel Validator —
-// no rule is re-written here; add a [Required]/[StringLength] on the entity and it applies to imports too.
 public class ExcelImportService
 {
     private static readonly string[] EmployeeHeaders =

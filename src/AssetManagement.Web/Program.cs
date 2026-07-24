@@ -78,10 +78,6 @@ builder.Services.AddHttpClient("AgentClient", client => client.Timeout = TimeSpa
 builder.Services.AddScoped<ExcelImportService>();
 builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 
-// Agent write command registrations removed in favor of direct service execution
-
-
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

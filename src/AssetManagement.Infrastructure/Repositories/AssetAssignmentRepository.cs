@@ -1,14 +1,9 @@
 using AssetManagement.Application.DTOs;
 using AssetManagement.Application.DTOs.AssignmentDTOs;
-using AssetManagement.Application.Interfaces.Assets;
 using AssetManagement.Application.Interfaces.Assignments;
-using AssetManagement.Application.Interfaces.Employees;
 using AssetManagement.Application.Interfaces.Data;
-using AssetManagement.Application.Interfaces.Agent;
 using AssetManagement.Domain.Entities;
-using AssetManagement.Domain.Enums.Assets;
 using AssetManagement.Domain.Enums.Assignments;
-using AssetManagement.Domain.Enums.Employees;
 using AssetManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Dapper;
@@ -67,97 +62,7 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
 
     public async Task<PagedResultDto<AssetAssignmentHistoryDto>> GetAssignmentHistoryAsync(AssignmentQueryDto queryDto)
     {
-        // var query = _context.AssetAssignments
-        //     .AsNoTracking()
-        //     .Include(a => a.Asset)
-        //     .Include(a => a.Employee)
-        //     .AsQueryable();
 
-        // // Searching
-        // if (!string.IsNullOrEmpty(queryDto.SearchTerm))
-        // {
-        //     switch (queryDto.SearchField)
-        //     {
-        //         case AssignmentSearchField.AssetName:
-        //             query = query.Where(a => a.Asset.AssetName.Contains(queryDto.SearchTerm));
-        //             break;
-        //         case AssignmentSearchField.AssignedEmployeeName:
-        //             query = query.Where(a => a.Employee.FullName.Contains(queryDto.SearchTerm));
-        //             break;
-        //     }
-        // }
-
-        // if (queryDto.ReturnStatus.HasValue)
-        // {
-        //     if (queryDto.ReturnStatus.Value)
-        //         query = query.Where(a => a.ReturnDate != null);
-        //     else
-        //         query = query.Where(a => a.ReturnDate == null);
-        // }
-
-        // if (queryDto.AssignmentDateFrom.HasValue)
-        //     query = query.Where(a => a.AssignmentDate >= queryDto.AssignmentDateFrom.Value);
-
-        // if (queryDto.AssignmentDateTo.HasValue)
-        //     query = query.Where(a => a.AssignmentDate <= queryDto.AssignmentDateTo.Value);
-
-        // if (queryDto.ReturnDateFrom.HasValue)
-        //     query = query.Where(a => a.ReturnDate >= queryDto.ReturnDateFrom.Value);
-
-        // if (queryDto.ReturnDateTo.HasValue)
-        //     query = query.Where(a => a.ReturnDate <= queryDto.ReturnDateTo.Value);
-
-        // // Sorting
-        // if (queryDto.SortField.HasValue)
-        // {
-        //     switch (queryDto.SortField.Value)
-        //     {
-        //         case AssignmentSortField.AssignmentDate:
-        //             query = queryDto.SortDirection == SortDirection.Ascending
-        //                 ? query.OrderBy(a => a.AssignmentDate)
-        //                 : query.OrderByDescending(a => a.AssignmentDate);
-        //             break;
-        //         case AssignmentSortField.ReturnDate:
-        //             query = queryDto.SortDirection == SortDirection.Ascending
-        //                 ? query.OrderBy(a => a.ReturnDate)
-        //                 : query.OrderByDescending(a => a.ReturnDate);
-        //             break;
-        //         case AssignmentSortField.AssetName:
-        //             query = queryDto.SortDirection == SortDirection.Ascending
-        //                 ? query.OrderBy(a => a.Asset.AssetName)
-        //                 : query.OrderByDescending(a => a.Asset.AssetName);
-        //             break;
-        //     }
-        // }
-        // else
-        // {
-        //     query = query.OrderByDescending(a => a.AssignmentDate);
-        // }
-
-        // var totalCount = await query.CountAsync();
-
-        // var pagedAssignments = await query
-        //     .Skip((queryDto.PageNumber - 1) * queryDto.PageSize)
-        //     .Take(queryDto.PageSize)
-        //     .Select(a => new AssetAssignmentHistoryDto
-        //     {
-        //         AssignmentId = a.Id,
-        //         EmployeeName = a.Employee.FullName,
-        //         AssetName = a.Asset.AssetName,
-        //         SerialNumber = a.Asset.SerialNumber,
-        //         AssignedDate = a.AssignmentDate,
-        //         ReturnedDate = a.ReturnDate,
-        //         IsReturned = a.ReturnDate != null
-        //     })
-        //     .ToListAsync();
-
-        // return new PagedResultDto<AssetAssignmentHistoryDto>
-        // {
-        //     Items = pagedAssignments,
-        //     TotalCount = totalCount,
-        //     PageNumber = queryDto.PageNumber,
-        //     PageSize = queryDto.PageSize
-        // };
         var builder = new SqlBuilder();
         var sql = @"
         SELECT 
@@ -182,7 +87,7 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
         ";
 
-        // create the template and pass the pagination parameters right away
+        // Template for the SQL query with parameters for pagination
         var template = builder.AddTemplate(sql, new
         {
             Offset = (queryDto.PageNumber - 1) * queryDto.PageSize,
@@ -245,13 +150,13 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         }
 
         using var connection = _sqlConnectionFactory.CreateConnection();
-        // Run the main query to get the page of data
+        // Query to get the page of data
         var pagedAssignments = await connection.QueryAsync<AssetAssignmentHistoryDto>(
             template.RawSql,
             template.Parameters
         );
 
-        // A second template using the SAME builder just to get the total count
+        // To get the total count
         var countTemplate = builder.AddTemplate(@"
         SELECT COUNT(*) 
         FROM AssetAssignments aa
@@ -260,13 +165,12 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         /**where**/
         ");
 
-        // ExecuteScalarAsync returns a single value (the count) instead of a list
+        // Execute the count query
         var totalCount = await connection.ExecuteScalarAsync<int>(
             countTemplate.RawSql,
             countTemplate.Parameters
         );
 
-        // Return the exact same object as returned in EF Core!
         return new PagedResultDto<AssetAssignmentHistoryDto>
         {
             Items = pagedAssignments,

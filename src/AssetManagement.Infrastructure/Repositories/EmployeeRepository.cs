@@ -1,13 +1,8 @@
 using AssetManagement.Application.DTOs;
 using AssetManagement.Application.DTOs.EmployeeDTOs;
-using AssetManagement.Application.Interfaces.Assets;
-using AssetManagement.Application.Interfaces.Assignments;
 using AssetManagement.Application.Interfaces.Employees;
 using AssetManagement.Application.Interfaces.Data;
-using AssetManagement.Application.Interfaces.Agent;
 using AssetManagement.Domain.Entities;
-using AssetManagement.Domain.Enums.Assets;
-using AssetManagement.Domain.Enums.Assignments;
 using AssetManagement.Domain.Enums.Employees;
 using AssetManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +28,7 @@ public class EmployeeRepository : IEmployeeRepository
 
     public async Task DeleteAsync(int id)
     {
-        var employee = await GetByIdAsync(id); // Delete operation is not really a read-only query.
+        var employee = await GetByIdAsync(id);
 
         if (employee is null)
             return;
