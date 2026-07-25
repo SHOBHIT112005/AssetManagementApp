@@ -11,7 +11,6 @@ public static class IdentitySeeder
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Create Admin role
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
             var roleResult = await roleManager.CreateAsync(new IdentityRole("Admin"));
@@ -19,7 +18,13 @@ public static class IdentitySeeder
                 throw new Exception(string.Join(", ", roleResult.Errors.Select(e => e.Description)));
         }
 
-        // Create admin user
+        if (!await roleManager.RoleExistsAsync("Employee"))
+        {
+            var roleResult = await roleManager.CreateAsync(new IdentityRole("Employee"));
+            if (!roleResult.Succeeded)
+                throw new Exception(string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+        }
+
         var adminUser = await userManager.FindByNameAsync("admin");
         if (adminUser == null)
         {
@@ -35,7 +40,6 @@ public static class IdentitySeeder
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
-        // Assign role
         if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");

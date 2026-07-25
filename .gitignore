@@ -18,3 +18,7 @@ artifacts/
 
 # Ignore tests if required by previous setup
 tests/
+
+# Data seeder
+SeedEmployeeData.sql
+generate_seed.py

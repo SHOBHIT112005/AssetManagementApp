@@ -2,119 +2,124 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-@using AssetManagement.Application.Interfaces.Assets
-@using AssetManagement.Application.Interfaces.Assignments
+@using AssetManagement.Application.DTOs.EmployeeDTOs
 @using AssetManagement.Application.Interfaces.Employees
-@using AssetManagement.Application.Interfaces.Data
-@using AssetManagement.Application.Interfaces.Agent
-@using AssetManagement.Domain.Entities
 @using Microsoft.AspNetCore.Components.Forms
-@using AssetManagement.Domain.Enums.Assets
-@using AssetManagement.Domain.Enums.Assignments
 @using AssetManagement.Domain.Enums.Employees
 
-@inject IEmployeeService EmployeeService
-
+@inject IEmployeeProvisioningService ProvisioningService
 @inject NavigationManager Navigation
+
+<div class="app-form-container">
+    <div class="app-form-header">
+        <h2>Add a new Employee</h2>
+    </div>
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
     <div class="alert alert-danger">@ErrorMessage</div>
 }
-<EditForm Model="NewEmployee" OnValidSubmit="SaveEmployee" FormName="CreateEmployee">
-    <DataAnnotationsValidator />
 
-    <h2>Add a new Employee</h2>
-    <div class="mb-3">
-        <label for="fullName" class="form-label">
-            Full Name <span class="text-danger">*</span>
-        </label>
+<div class="app-form-card">
+    <EditForm Model="NewEmployee" OnValidSubmit="SaveEmployee" FormName="CreateEmployee">
+        <DataAnnotationsValidator />
 
-        <InputText id="fullName" class="form-control" @bind-Value="NewEmployee.FullName"
-                   placeholder="Enter employee full name" />
-        <ValidationMessage For="@(() => NewEmployee.FullName)" />
-    </div>
+        <div class="app-form-section">
+            <div class="app-form-section-header">Personal Information</div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="fullName" class="app-form-label">
+                        Full Name <span class="text-danger">*</span>
+                    </label>
+                    <InputText id="fullName" class="form-control app-form-control" @bind-Value="NewEmployee.FullName" placeholder="Enter employee full name" />
+                    <ValidationMessage For="@(() => NewEmployee.FullName)" class="app-form-validation" />
+                </div>
 
-    <div class="mb-3">
-        <label for="email" class="form-label">
-            Email <span class="text-danger">*</span>
-        </label>
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="app-form-label">
+                        Email <span class="text-danger">*</span>
+                    </label>
+                    <InputText id="email" class="form-control app-form-control" @bind-Value="NewEmployee.Email" placeholder="Enter email address" />
+                    <ValidationMessage For="@(() => NewEmployee.Email)" class="app-form-validation" />
+                </div>
 
-        <InputText id="email" class="form-control" @bind-Value="NewEmployee.Email" placeholder="Enter email address" />
-        <ValidationMessage For="@(() => NewEmployee.Email)" />
-    </div>
+                <div class="col-md-6 mb-3">
+                    <label for="phoneNumber" class="app-form-label">
+                        Phone Number <span class="text-danger">*</span>
+                    </label>
+                    <InputText id="phoneNumber" class="form-control app-form-control" @bind-Value="NewEmployee.PhoneNumber" placeholder="Enter phone number" />
+                    <ValidationMessage For="@(() => NewEmployee.PhoneNumber)" class="app-form-validation" />
+                </div>
 
-    <div class="mb-3">
-        <label for="phoneNumber" class="form-label">
-            Phone Number <span class="text-danger">*</span>
-        </label>
+                <div class="col-md-6 mb-3">
+                    <label for="dateOfBirth" class="app-form-label">
+                        Date of Birth
+                    </label>
+                    <InputDate id="dateOfBirth" class="form-control app-form-control" @bind-Value="NewEmployee.DateOfBirth" />
+                    <ValidationMessage For="@(() => NewEmployee.DateOfBirth)" class="app-form-validation" />
+                </div>
+            </div>
+        </div>
 
-        <InputText id="phoneNumber" class="form-control" @bind-Value="NewEmployee.PhoneNumber"
-                   placeholder="Enter phone number" />
-        <ValidationMessage For="@(() => NewEmployee.PhoneNumber)" />
-    </div>
+        <div class="app-form-section">
+            <div class="app-form-section-header">Employment Details</div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="department" class="app-form-label">
+                        Department <span class="text-danger">*</span>
+                    </label>
+                    <InputSelect id="department" class="form-select app-form-control" @bind-Value="NewEmployee.Department">
+                        <option value="">-- Select Department --</option>
+                        @foreach (Department department in Enum.GetValues<Department>())
+                        {
+                            <option value="@department">@department</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => NewEmployee.Department)" class="app-form-validation" />
+                </div>
 
-    <div class="mb-3">
-        <label for="department" class="form-label">
-            Department <span class="text-danger">*</span>
-        </label>
+                <div class="col-md-6 mb-3">
+                    <label for="designation" class="app-form-label">
+                        Designation <span class="text-danger">*</span>
+                    </label>
+                    <InputSelect id="designation" class="form-select app-form-control" @bind-Value="NewEmployee.Designation">
+                        <option value="">-- Select Designation --</option>
+                        @foreach (EmployeeDesignation designation in Enum.GetValues<EmployeeDesignation>())
+                        {
+                            <option value="@designation">@designation</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => NewEmployee.Designation)" class="app-form-validation" />
+                </div>
+            </div>
+        </div>
 
-        <InputSelect id="department" class="form-select" @bind-Value="NewEmployee.Department">
-
-            <option value="">-- Select Department --</option>
-
-            @foreach (Department department in Enum.GetValues<Department>())
-            {
-                <option value="@department">
-                    @department
-                </option>
-            }
-
-        </InputSelect>
-        <ValidationMessage For="@(() => NewEmployee.Department)" />
-    </div>
-
-    <div class="mb-3">
-        <label for="designation" class="form-label">
-            Designation <span class="text-danger">*</span>
-        </label>
-
-        <InputSelect id="designation" class="form-select" @bind-Value="NewEmployee.Designation">
-
-            <option value="">-- Select Designation --</option>
-
-            @foreach (EmployeeDesignation designation in Enum.GetValues<EmployeeDesignation>())
-            {
-                <option value="@designation">
-                    @designation
-                </option>
-            }
-
-        </InputSelect>
-        <ValidationMessage For="@(() => NewEmployee.Designation)" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">
-        Save
-    </button>
-</EditForm>
+        <div class="app-form-actions">
+            <button type="submit" class="btn btn-primary px-4">
+                Save Employee
+            </button>
+            <button type="button" class="btn btn-outline-secondary px-4" @onclick='() => Navigation.NavigateTo("/employees")'>
+                Cancel
+            </button>
+        </div>
+    </EditForm>
+</div>
+</div>
 
 @code {
-    private Employee NewEmployee = new Employee();
+    private EmployeeCreateDto NewEmployee = new EmployeeCreateDto();
     private string ErrorMessage { get; set; } = string.Empty;
     private async Task SaveEmployee()
     {
         try
         {
-            await EmployeeService.CreateEmployeeAsync(NewEmployee);
-            Navigation.NavigateTo(uri: "/employees");
+            await ProvisioningService.ProvisionEmployeeAsync(NewEmployee);
+            Navigation.NavigateTo("/employees");
         }
         catch (Exception ex)
         {
             ErrorMessage = $"An unexpected error occurred while creating the employee: {ex.Message}";
-            @* Console.WriteLine(value: $"An unexpected error occurred while creating the employee: {ex.Message}"); *@
         }
     }
 }
-
 

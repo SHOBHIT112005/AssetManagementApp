@@ -6,7 +6,7 @@ namespace AssetManagement.Application.Interfaces.Assignments;
 
 public interface IAssetAssignmentRepository
 {
-    Task <IEnumerable<AssetAssignment>> GetAllAsync();
+    Task<IEnumerable<AssetAssignment>> GetAllAsync();
     Task AddAsync(AssetAssignment assignment);
     Task UpdateAsync(AssetAssignment assignment);
     Task<AssetAssignment?> GetByIdAsync(int id);
@@ -14,5 +14,3 @@ public interface IAssetAssignmentRepository
     Task<IEnumerable<AssetAssignment>> GetByAssetIdAsync(int assetId);
     Task<PagedResultDto<AssetAssignmentHistoryDto>> GetAssignmentHistoryAsync(AssignmentQueryDto queryDto);
 }
-
-

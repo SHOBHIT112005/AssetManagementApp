@@ -121,7 +121,8 @@ public class AssetRepository : IAssetRepository
                  COALESCE(SUM(CASE WHEN Status = 1 THEN 1 ELSE 0 END),0) AS AvailableAssets, 
                  COALESCE(SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END),0) AS AssignedAssets, 
                  COALESCE(SUM(CASE WHEN Status = 3 THEN 1 ELSE 0 END),0) AS UnderRepairAssets, 
-                 COALESCE(SUM(CASE WHEN Status = 4 THEN 1 ELSE 0 END),0) AS RetiredAssets 
+                 COALESCE(SUM(CASE WHEN Status = 4 THEN 1 ELSE 0 END),0) AS RetiredAssets,
+                 COALESCE(SUM(CASE WHEN WarrantyExpiryDate >= @Today AND WarrantyExpiryDate <= @Next30Days THEN 1 ELSE 0 END),0) AS ExpiringWarrantyAssets
                  FROM Assets
                  WHERE (@Status IS NULL OR Status = @Status)
                  AND (@AssetType IS NULL OR Type = @AssetType)";
@@ -130,7 +131,9 @@ public class AssetRepository : IAssetRepository
         var result = await connection.QueryAsync<dynamic>(sql, new
         {
             queryDto.Status,
-            queryDto.AssetType
+            queryDto.AssetType,
+            Today = DateOnly.FromDateTime(DateTime.Today),
+            Next30Days = DateOnly.FromDateTime(DateTime.Today.AddDays(30))
         });
         return new AssetSummaryDto
         {
@@ -138,9 +141,11 @@ public class AssetRepository : IAssetRepository
             AvailableAssets = result.FirstOrDefault()?.AvailableAssets ?? 0,
             AssignedAssets = result.FirstOrDefault()?.AssignedAssets ?? 0,
             UnderRepairAssets = result.FirstOrDefault()?.UnderRepairAssets ?? 0,
-            RetiredAssets = result.FirstOrDefault()?.RetiredAssets ?? 0
+            RetiredAssets = result.FirstOrDefault()?.RetiredAssets ?? 0,
+            ExpiringWarrantyAssets = result.FirstOrDefault()?.ExpiringWarrantyAssets ?? 0
         };
     }
+
     public async Task<HashSet<string>> GetExistingSerialNumbersAsync(IEnumerable<string> serialNumbers)
     {
         var serialSet = serialNumbers
@@ -155,5 +160,3 @@ public class AssetRepository : IAssetRepository
             .ToHashSetAsync();
     }
 }
-
-

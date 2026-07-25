@@ -1,0 +1,184 @@
+@page "/my-profile"
+@attribute [Authorize(Roles = "Employee")]
+@rendermode InteractiveServer
+
+@using AssetManagement.Application.Interfaces.Employees
+@using AssetManagement.Domain.Entities
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
+@inject IEmployeeService EmployeeService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="app-form-container">
+<div class="app-form-header">
+    <div>
+        <h2>My Profile</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size: 0.9rem;">
+            View your details and update your contact information.
+        </p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(SuccessMessage))
+{
+    <div class="alert alert-success">@SuccessMessage</div>
+}
+
+@if (isLoading)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (CurrentEmployee != null)
+{
+    <div class="app-form-card">
+        <EditForm Model="CurrentEmployee" OnValidSubmit="SaveChanges" FormName="MyProfile">
+            <DataAnnotationsValidator />
+
+            <div class="app-form-section">
+                <div class="app-form-section-header">Employment Information</div>
+                <div class="row">
+                    <!-- Read Only Fields -->
+                    <div class="col-md-6 mb-3">
+                        <label class="app-form-label">Email</label>
+                        <input type="text" class="form-control app-form-control" value="@CurrentEmployee.Email" readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="app-form-label">Department</label>
+                        <input type="text" class="form-control app-form-control" value="@CurrentEmployee.Department" readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="app-form-label">Designation</label>
+                        <input type="text" class="form-control app-form-control" value="@CurrentEmployee.Designation" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-form-section">
+                <div class="app-form-section-header">Personal Details</div>
+                <div class="row">
+                    <!-- Editable Fields -->
+                    <div class="col-md-6 mb-3">
+                        <label for="fullName" class="app-form-label">
+                            Full Name <span class="text-danger">*</span>
+                        </label>
+                        <InputText id="fullName" class="form-control app-form-control" @bind-Value="CurrentEmployee.FullName" placeholder="Enter full name" />
+                        <ValidationMessage For="@(() => CurrentEmployee.FullName)" class="app-form-validation" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="app-form-label">
+                            Username <span class="text-danger">*</span>
+                        </label>
+                        <InputText id="username" class="form-control app-form-control" @bind-Value="Username" placeholder="Enter username" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="phoneNumber" class="app-form-label">
+                            Phone Number <span class="text-danger">*</span>
+                        </label>
+                        <InputText id="phoneNumber" class="form-control app-form-control" @bind-Value="CurrentEmployee.PhoneNumber" placeholder="Enter phone number" />
+                        <ValidationMessage For="@(() => CurrentEmployee.PhoneNumber)" class="app-form-validation" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-form-actions">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-save me-1"></i> Save Changes
+                </button>
+            </div>
+        </EditForm>
+    </div>
+}
+</div>
+
+@code {
+    private Employee? CurrentEmployee;
+    private string Username { get; set; } = string.Empty;
+    private bool isLoading = true;
+    private string ErrorMessage = string.Empty;
+    private string SuccessMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var identityUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (identityUserId != null)
+            {
+                CurrentEmployee = await EmployeeService.GetEmployeeByIdentityIdAsync(identityUserId);
+                if (CurrentEmployee == null)
+                {
+                    ErrorMessage = "Could not find your employee record.";
+                }
+                else
+                {
+                    var user = await UserManager.FindByIdAsync(identityUserId);
+                    if (user != null)
+                    {
+                        Username = user.UserName ?? string.Empty;
+                    }
+                }
+            }
+            else
+            {
+                ErrorMessage = "Could not authenticate user.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading profile: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+        if (CurrentEmployee == null) return;
+        
+        try
+        {
+            ErrorMessage = string.Empty;
+            SuccessMessage = string.Empty;
+            
+            await EmployeeService.UpdateEmployeeAsync(CurrentEmployee);
+            
+            var user = await UserManager.FindByIdAsync(CurrentEmployee.IdentityUserId!);
+            if (user != null && user.UserName != Username)
+            {
+                var setUserNameResult = await UserManager.SetUserNameAsync(user, Username);
+                if (!setUserNameResult.Succeeded)
+                {
+                    ErrorMessage = $"Profile updated, but failed to update username: {string.Join(", ", setUserNameResult.Errors.Select(e => e.Description))}";
+                    return;
+                }
+            }
+            
+            SuccessMessage = "Profile updated successfully!";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error updating profile: {ex.Message}";
+        }
+    }
+}

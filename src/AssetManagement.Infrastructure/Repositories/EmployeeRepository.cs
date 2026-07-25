@@ -26,6 +26,13 @@ public class EmployeeRepository : IEmployeeRepository
         await _context.Employees.AddAsync(employee);
     }
 
+    public async Task<Employee?> GetByIdentityIdAsync(string identityUserId)
+    {
+        return await _context.Employees
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.IdentityUserId == identityUserId);
+    }
+
     public async Task DeleteAsync(int id)
     {
         var employee = await GetByIdAsync(id);
@@ -146,6 +153,7 @@ public class EmployeeRepository : IEmployeeRepository
                 queryDto.Designation
             });
     }
+
     public async Task<(HashSet<string> Emails, HashSet<string> PhoneNumbers)> GetExistingEmployeesAsync(IEnumerable<string> emails, IEnumerable<string> phoneNumbers)
     {
         var emailSet = emails
@@ -173,5 +181,3 @@ public class EmployeeRepository : IEmployeeRepository
         return (existingEmails, existingPhones);
     }
 }
-
-

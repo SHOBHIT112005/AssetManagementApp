@@ -125,7 +125,7 @@ namespace AssetManagement.Infrastructure.Migrations
                     b.HasIndex("SerialNumber")
                         .IsUnique();
 
-                    b.ToTable("Assets", (string)null);
+                    b.ToTable("Assets");
                 });
 
             modelBuilder.Entity("AssetManagement.Domain.Entities.AssetAssignment", b =>
@@ -154,7 +154,7 @@ namespace AssetManagement.Infrastructure.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("AssetAssignments", (string)null);
+                    b.ToTable("AssetAssignments");
                 });
 
             modelBuilder.Entity("AssetManagement.Domain.Entities.Employee", b =>
@@ -164,6 +164,9 @@ namespace AssetManagement.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<int>("Department")
                         .HasColumnType("int");
@@ -181,6 +184,9 @@ namespace AssetManagement.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("IdentityUserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -194,7 +200,7 @@ namespace AssetManagement.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

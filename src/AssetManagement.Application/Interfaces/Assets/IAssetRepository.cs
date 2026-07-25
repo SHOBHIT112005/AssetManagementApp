@@ -11,11 +11,7 @@ public interface IAssetRepository
     Task<IEnumerable<Asset>> GetAvailableAssetsAsync();
     Task AddAsync(Asset asset);
     Task UpdateAsync(Asset asset);
-    Task DeleteAsync(int id); // soft delete for asset history
+    Task DeleteAsync(int id);
     Task<AssetSummaryDto> GetAssetSummaryAsync(AssetQueryDto queryDto);
     Task<HashSet<string>> GetExistingSerialNumbersAsync(IEnumerable<string> serialNumbers);
 }
-
-
-
-

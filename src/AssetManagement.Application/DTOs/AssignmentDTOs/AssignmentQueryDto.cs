@@ -1,12 +1,11 @@
-using AssetManagement.Domain.Enums.Assets;
 using AssetManagement.Domain.Enums.Assignments;
-using AssetManagement.Domain.Enums.Employees;
 
 namespace AssetManagement.Application.DTOs.AssignmentDTOs;
 
 public class AssignmentQueryDto
 {
     public string? SearchTerm { get; set; }
+    public int? EmployeeId { get; set; }
     public AssignmentSearchField SearchField { get; set; } = AssignmentSearchField.AssetName;
     public bool? ReturnStatus { get; set; }
     public DateOnly? AssignmentDateFrom { get; set; }
@@ -18,4 +17,3 @@ public class AssignmentQueryDto
     public AssignmentSortField? SortField { get; set; }
     public SortDirection SortDirection { get; set; } = SortDirection.Ascending;
 }
-

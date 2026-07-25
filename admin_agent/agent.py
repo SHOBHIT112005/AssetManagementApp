@@ -22,7 +22,7 @@ from datetime import datetime
 
 
 class FilterCondition(BaseModel):
-    field: str = Field(description="The property name on the target entity. Asset: 'Type', 'Status', 'Condition', 'AssetName', 'SerialNumber', 'PurchaseDate', 'WarrantyExpiryDate'. Employee: 'Department', 'Designation', 'Status', 'FullName', 'Email'. AssetAssignment: 'AssignmentDate', 'ReturnDate', 'Notes'. Use Employee.FullName, Employee.Designation, or Employee.Department to filter assignments by employee.")
+    field: str = Field(description="The property name on the target entity. Asset: 'Type', 'Status', 'Condition', 'AssetName', 'SerialNumber', 'PurchaseDate', 'WarrantyExpiryDate'. Employee: 'Department', 'Designation', 'Status', 'FullName', 'Email', 'DateOfBirth'. AssetAssignment: 'AssignmentDate', 'ReturnDate'. Use Employee.FullName, Employee.Designation, or Employee.Department to filter assignments by employee.")
     operator: str = Field(description="Operator: '==', '!=', '>', '<', '>=', '<=', 'contains', 'is_null', 'is_not_null'")
     value: str = Field(description="The string value to compare against. E.g. AssetType : 'Laptop', 'Desktop', 'Monitor', 'Keyboard', 'Mouse', 'Phone', 'Printer'. AssetCondition : 'New', 'Good', 'NeedsRepair', 'Damaged'. AssetStatus : 'Available', 'Assigned', 'UnderRepair', 'Retired'. EmployeeStatus : 'Active', 'Inactive'. Department : 'IT', 'HR', 'Marketing', 'Finance', 'Operations'. Keep empty if is_null/is_not_null.")
 

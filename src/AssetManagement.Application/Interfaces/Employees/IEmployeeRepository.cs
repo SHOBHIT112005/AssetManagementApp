@@ -8,6 +8,7 @@ public interface IEmployeeRepository
 {
     Task<PagedResultDto<Employee>> GetAllAsync(EmployeeQueryDto queryDto);
     Task<Employee?> GetByIdAsync(int id);
+    Task<Employee?> GetByIdentityIdAsync(string identityUserId);
     Task AddAsync(Employee employee);
     Task UpdateAsync(Employee employee);
     Task DeleteAsync(int id);

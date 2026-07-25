@@ -1,38 +1,22 @@
 @page "/import"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
 @using AssetManagement.Application.Interfaces.Assets
-@using AssetManagement.Application.Interfaces.Assignments
-@using AssetManagement.Application.Interfaces.Employees
-@using AssetManagement.Application.Interfaces.Data
-@using AssetManagement.Application.Interfaces.Agent
 @using AssetManagement.Application.Services
 @using Microsoft.AspNetCore.Components.Forms
 
 @inject ExcelImportService Importer
-@inject IEmployeeService EmployeeService
 @inject IAssetService AssetService
 
 <h2>Bulk Import (Excel)</h2>
 
 <p class="text-muted">
-    Upload a <code>.xlsx</code> file to seed many records at once.
+    Upload a <code>.xlsx</code> file to seed Asset records at once.
     The first row must be column headers.
 </p>
 
 <div class="mb-3">
-    <label class="form-label">What are you importing?</label>
-    <div>
-        <label class="me-3">
-            <input type="radio" name="importType" checked="@(Type == ImportKind.Employees)"
-                   @onchange="() => Type = ImportKind.Employees" /> Employees
-        </label>
-        <label>
-            <input type="radio" name="importType" checked="@(Type == ImportKind.Assets)"
-                   @onchange="() => Type = ImportKind.Assets" /> Assets
-        </label>
-    </div>
     <small class="text-muted">Required columns: <code>@ExpectedColumns()</code></small>
 </div>
 
@@ -64,9 +48,6 @@
 }
 
 @code {
-    private enum ImportKind { Employees, Assets }
-
-    private ImportKind Type { get; set; } = ImportKind.Employees;
     private IBrowserFile? _file;
     private bool _busy;
     private string _message = string.Empty;
@@ -74,9 +55,7 @@
 
     private const long MaxBytes = 20 * 1024 * 1024; // 20 MB
 
-    private string ExpectedColumns() => Type == ImportKind.Employees
-        ? "FullName, Email, PhoneNumber, Department, Designation"
-        : "AssetName, SerialNumber, Type, PurchaseDate, WarrantyExpiryDate, Condition";
+    private string ExpectedColumns() => "AssetName, SerialNumber, Type, PurchaseDate, WarrantyExpiryDate, Condition";
 
     private void OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -97,26 +76,13 @@
             await _file.OpenReadStream(MaxBytes).CopyToAsync(memory);
             memory.Position = 0;
 
-            int imported;
-            int total;
-            if (Type == ImportKind.Employees)
-            {
-                var result = Importer.ParseEmployees(memory, _file.Name);
-                var validationResult = await EmployeeService.ValidateImportAsync(result.Valid);
-                _errors = result.Errors.Concat(validationResult.Errors).ToList();
-                await EmployeeService.CreateBulkEmployeesAsync(validationResult.ValidEmployees);
-                imported = validationResult.ValidEmployees.Count;
-                total = result.TotalRows;
-            }
-            else
-            {
-                var result = Importer.ParseAssets(memory, _file.Name);
-                var validationResult = await AssetService.ValidateImportAsync(result.Valid);
-                _errors = result.Errors.Concat(validationResult.Errors).ToList();
-                await AssetService.CreateAssetsAsync(validationResult.ValidAssets);
-                imported = validationResult.ValidAssets.Count;
-                total = result.TotalRows;
-            }
+            var result = Importer.ParseAssets(memory, _file.Name);
+            var validationResult = await AssetService.ValidateImportAsync(result.Valid);
+            _errors = result.Errors.Concat(validationResult.Errors).ToList();
+            await AssetService.CreateAssetsAsync(validationResult.ValidAssets);
+            
+            int imported = validationResult.ValidAssets.Count;
+            int total = result.TotalRows;
 
             _message = $"Imported {imported} of {total} row(s). {_errors.Count} skipped.";
         }

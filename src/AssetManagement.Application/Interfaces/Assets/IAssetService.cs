@@ -2,8 +2,6 @@ using AssetManagement.Application.DTOs;
 using AssetManagement.Application.DTOs.AssetDTOs;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums.Assets;
-using AssetManagement.Domain.Enums.Assignments;
-using AssetManagement.Domain.Enums.Employees;
 
 namespace AssetManagement.Application.Interfaces.Assets;
 
@@ -25,5 +23,3 @@ public interface IAssetService
 
     Task<AssetImportValidationResultDto> ValidateImportAsync(List<(int Row, Asset Asset)> assets);
 }
-
-

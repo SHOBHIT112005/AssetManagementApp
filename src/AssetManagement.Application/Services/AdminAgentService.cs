@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AssetManagement.Application.Interfaces.Agent;
-using AssetManagement.Domain.Entities;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -27,15 +26,13 @@ public sealed class AdminAgentService
         _agentEndpoint = configuration["Agent:Endpoint"] ?? "http://localhost:8000/a2a/admin_agent";
     }
 
-    // --- JSON DTOs for parsing the Python agent response ---
-
     private sealed record FilterCondition(
-        string field, 
-        [property: JsonPropertyName("operator")] string OperatorStr, 
+        string field,
+        [property: JsonPropertyName("operator")] string OperatorStr,
         string value);
-        
+
     private sealed record AgentAction(
-        string target_entity, 
+        string target_entity,
         List<FilterCondition> filters,
         int limit,
         string summary);
@@ -96,7 +93,7 @@ public sealed class AdminAgentService
         {
             using var doc = JsonDocument.Parse(jsonResponse);
             var root = doc.RootElement;
-            
+
             if (root.TryGetProperty("error", out var errorEl))
             {
                 return AdminAgentResponse.Help($"Agent JSON-RPC error: {errorEl.GetRawText()}");
@@ -106,8 +103,8 @@ public sealed class AdminAgentService
 
             if (root.TryGetProperty("result", out var resultEl))
             {
-                if (resultEl.TryGetProperty("status", out var statusEl) && 
-                    statusEl.TryGetProperty("state", out var stateEl) && 
+                if (resultEl.TryGetProperty("status", out var statusEl) &&
+                    statusEl.TryGetProperty("state", out var stateEl) &&
                     stateEl.GetString() == "failed")
                 {
                     var errMsg = statusEl.TryGetProperty("error", out var err) ? err.GetString() : "Unknown error";
@@ -115,8 +112,8 @@ public sealed class AdminAgentService
                 }
 
                 JsonElement? partsEl = null;
-                
-                if (resultEl.TryGetProperty("result", out var innerResult) && 
+
+                if (resultEl.TryGetProperty("result", out var innerResult) &&
                     innerResult.TryGetProperty("message", out var msgEl) &&
                     msgEl.TryGetProperty("parts", out var p1))
                 {

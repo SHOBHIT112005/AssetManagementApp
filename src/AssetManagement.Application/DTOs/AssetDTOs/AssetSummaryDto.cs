@@ -7,4 +7,5 @@ public record AssetSummaryDto
     public int AssignedAssets { get; init; }
     public int UnderRepairAssets { get; init; }
     public int RetiredAssets { get; init; }
+    public int ExpiringWarrantyAssets { get; init; }
 }

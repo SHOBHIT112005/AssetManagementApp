@@ -4,14 +4,8 @@
 
 @using AssetManagement.Application.DTOs
 @using AssetManagement.Application.DTOs.EmployeeDTOs
-@using AssetManagement.Application.Interfaces.Assets
-@using AssetManagement.Application.Interfaces.Assignments
 @using AssetManagement.Application.Interfaces.Employees
-@using AssetManagement.Application.Interfaces.Data
-@using AssetManagement.Application.Interfaces.Agent
 @using AssetManagement.Domain.Entities
-@using AssetManagement.Domain.Enums.Assets
-@using AssetManagement.Domain.Enums.Assignments
 @using AssetManagement.Domain.Enums.Employees
 
 @inject IEmployeeService EmployeeService
@@ -159,6 +153,7 @@ else
                                     </button>
                                 </th>
                                 <th>Designation</th>
+                                <th>Date of Birth</th>
                                 <th>Status</th>
                                 <th class="text-end">Action</th>
                             </tr>
@@ -172,6 +167,7 @@ else
                                     <td class="align-middle">@employee.PhoneNumber</td>
                                     <td class="align-middle">@employee.Department</td>
                                     <td class="align-middle">@employee.Designation</td>
+                                    <td class="align-middle">@(employee.DateOfBirth?.ToString("MM/dd/yyyy") ?? "-")</td>
                                     <td class="align-middle">
                                         <span class="badge @(employee.Status == EmployeeStatus.Active ? "bg-success" : "bg-secondary")">
                                             @employee.Status

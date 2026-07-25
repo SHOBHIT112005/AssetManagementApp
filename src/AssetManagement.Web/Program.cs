@@ -20,18 +20,16 @@ builder.Logging.AddConsole();
 var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtectionKeys");
 Directory.CreateDirectory(dataProtectionKeysPath);
 
-// Add services to the container.
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
     .SetApplicationName("AssetManagementApp");
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-// 1. Business Data Context
 builder.Services.AddDbContext<AssetDbContext>(
     options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
-    )    
+    )
 );
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -63,10 +61,10 @@ builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 
-
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IEmployeeProvisioningService, EmployeeProvisioningService>();
 builder.Services.AddScoped<IAssetService, AssetService>();
 builder.Services.AddScoped<IAssetAssignmentRepository, AssetAssignmentRepository>();
 builder.Services.AddScoped<IAssetAssignmentService, AssetAssignmentService>();
@@ -85,11 +83,9 @@ using (var scope = app.Services.CreateScope())
     await IdentitySeeder.SeedAsync(scope.ServiceProvider);
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
@@ -104,4 +100,3 @@ app.MapAccountEndpoints();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();
-

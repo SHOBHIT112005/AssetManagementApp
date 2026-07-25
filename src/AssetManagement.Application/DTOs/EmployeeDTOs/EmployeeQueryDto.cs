@@ -1,5 +1,3 @@
-using AssetManagement.Domain.Enums.Assets;
-using AssetManagement.Domain.Enums.Assignments;
 using AssetManagement.Domain.Enums.Employees;
 
 namespace AssetManagement.Application.DTOs.EmployeeDTOs;

@@ -1,12 +1,7 @@
 using System.Data;
-using AssetManagement.Application.Interfaces.Assets;
-using AssetManagement.Application.Interfaces.Assignments;
-using AssetManagement.Application.Interfaces.Employees;
 using AssetManagement.Application.Interfaces.Data;
-using AssetManagement.Application.Interfaces.Agent;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-
 using Dapper;
 
 namespace AssetManagement.Infrastructure.Data;
@@ -54,7 +49,7 @@ public class SqlConnectionFactory : ISqlConnectionFactory
 
     public SqlConnectionFactory(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection") 
+        _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new ArgumentNullException("Connection string is missing");
     }
 
@@ -63,4 +58,3 @@ public class SqlConnectionFactory : ISqlConnectionFactory
         return new SqlConnection(_connectionString);
     }
 }
-

@@ -4,14 +4,11 @@ using AssetManagement.Application.Interfaces.Assets;
 using AssetManagement.Application.Interfaces.Assignments;
 using AssetManagement.Application.Interfaces.Employees;
 using AssetManagement.Application.Interfaces.Data;
-using AssetManagement.Application.Interfaces.Agent;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums.Assets;
-using AssetManagement.Domain.Enums.Assignments;
 using AssetManagement.Domain.Enums.Employees;
 
 namespace AssetManagement.Application.Services;
-
 
 public class AssetAssignmentService : IAssetAssignmentService
 {
@@ -22,7 +19,9 @@ public class AssetAssignmentService : IAssetAssignmentService
 
     public AssetAssignmentService(
         IAssetAssignmentRepository assetAssignmentRepository,
-        IAssetRepository assetRepository, IEmployeeRepository employeeRepository, IUnitOfWork unitOfWork)
+        IAssetRepository assetRepository,
+        IEmployeeRepository employeeRepository,
+        IUnitOfWork unitOfWork)
     {
         _assetAssignmentRepository = assetAssignmentRepository;
         _assetRepository = assetRepository;
@@ -91,14 +90,12 @@ public class AssetAssignmentService : IAssetAssignmentService
     public async Task<AssetAssignment?> GetAssignmentByIdAsync(int id)
     {
         var assignment = await _assetAssignmentRepository.GetByIdAsync(id) ?? throw new ArgumentException("Assignment not found.");
-
         return assignment;
     }
 
     public async Task<IEnumerable<AssetAssignment>> GetAssignmentsByAssetIdAsync(int assetId)
     {
         var asset = await _assetRepository.GetByIdAsync(assetId) ?? throw new ArgumentException("Asset not found.");
-
         return await _assetAssignmentRepository.GetByAssetIdAsync(assetId);
     }
 
@@ -112,7 +109,6 @@ public class AssetAssignmentService : IAssetAssignmentService
     public async Task<IEnumerable<AssetAssignment>> GetAssignmentsByEmployeeIdAsync(int employeeId)
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId) ?? throw new ArgumentException("Employee not found.");
-
         return await _assetAssignmentRepository.GetByEmployeeIdAsync(employeeId);
     }
 
@@ -121,4 +117,3 @@ public class AssetAssignmentService : IAssetAssignmentService
         return _assetAssignmentRepository.GetAssignmentHistoryAsync(queryDto);
     }
 }
-

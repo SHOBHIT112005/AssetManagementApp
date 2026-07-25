@@ -47,7 +47,6 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         existingAssignment.EmployeeId = assignment.EmployeeId;
         existingAssignment.AssignmentDate = assignment.AssignmentDate;
         existingAssignment.ReturnDate = assignment.ReturnDate;
-
     }
 
     public async Task<IEnumerable<AssetAssignment>> GetByAssetIdAsync(int assetId)
@@ -62,7 +61,6 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
 
     public async Task<PagedResultDto<AssetAssignmentHistoryDto>> GetAssignmentHistoryAsync(AssignmentQueryDto queryDto)
     {
-
         var builder = new SqlBuilder();
         var sql = @"
         SELECT 
@@ -87,7 +85,6 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
         ";
 
-        // Template for the SQL query with parameters for pagination
         var template = builder.AddTemplate(sql, new
         {
             Offset = (queryDto.PageNumber - 1) * queryDto.PageSize,
@@ -96,7 +93,6 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
 
         if (!string.IsNullOrEmpty(queryDto.SearchTerm))
         {
-            // call .Where on the BUILDER, not the template
             switch (queryDto.SearchField)
             {
                 case AssignmentSearchField.AssetName:
@@ -106,6 +102,11 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
                     builder.Where("e.FullName LIKE @SearchTerm", new { SearchTerm = $"%{queryDto.SearchTerm}%" });
                     break;
             }
+        }
+
+        if (queryDto.EmployeeId.HasValue)
+        {
+            builder.Where("aa.EmployeeId = @EmployeeId", new { queryDto.EmployeeId });
         }
 
         if (queryDto.ReturnStatus.HasValue)
@@ -128,7 +129,6 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         if (queryDto.ReturnDateTo.HasValue)
             builder.Where("aa.ReturnDate <= @ReturnDateTo", new { queryDto.ReturnDateTo });
 
-        // Sorting  
         if (queryDto.SortField.HasValue)
         {
             switch (queryDto.SortField.Value)
@@ -150,13 +150,12 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         }
 
         using var connection = _sqlConnectionFactory.CreateConnection();
-        // Query to get the page of data
+
         var pagedAssignments = await connection.QueryAsync<AssetAssignmentHistoryDto>(
             template.RawSql,
             template.Parameters
         );
 
-        // To get the total count
         var countTemplate = builder.AddTemplate(@"
         SELECT COUNT(*) 
         FROM AssetAssignments aa
@@ -165,7 +164,6 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         /**where**/
         ");
 
-        // Execute the count query
         var totalCount = await connection.ExecuteScalarAsync<int>(
             countTemplate.RawSql,
             countTemplate.Parameters
@@ -180,4 +178,3 @@ public class AssetAssignmentRepository : IAssetAssignmentRepository
         };
     }
 }
-

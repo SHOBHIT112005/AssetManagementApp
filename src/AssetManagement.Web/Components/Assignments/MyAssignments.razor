@@ -1,0 +1,218 @@
+@page "/my-assignments"
+@attribute [Authorize(Roles = "Employee")]
+@rendermode InteractiveServer
+@using AssetManagement.Application.DTOs
+@using AssetManagement.Application.DTOs.AssignmentDTOs
+@using AssetManagement.Application.Interfaces.Assignments
+@using AssetManagement.Application.Interfaces.Employees
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject IAssetAssignmentService AssetAssignmentService
+@inject IEmployeeService EmployeeService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Assignments</h2>
+</div>
+
+@if (!string.IsNullOrEmpty(CurrentEmployeeName))
+{
+    <section class="banner">
+        <div class="banner-content">
+            <h2>Hi, @CurrentEmployeeName</h2>
+            <p>View your currently assigned assets and return them when no longer needed.</p>
+        </div>
+        <img src="images/file.svg" class="banner-illustration" alt="Hero Illustration" />
+    </section>
+}
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+@if (isLoading)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Asset Name</th>
+                            <th>Serial Number</th>
+                            <th>Assigned Date</th>
+                            <th>Return Date</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (PagedAssignments.Items.Any())
+                        {
+                            foreach (var assignment in PagedAssignments.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <div class="fw-bold">@assignment.AssetName</div>
+                                                <div class="small text-muted">@assignment.AssetType</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@assignment.SerialNumber</td>
+                                    <td>@assignment.AssignedDate.ToString("dd MMM yyyy")</td>
+                                    <td>@(assignment.ReturnedDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                                    <td>
+                                        <span class="badge bg-info">@assignment.AssetCondition</span>
+                                    </td>
+                                    <td>
+                                        @if (assignment.ReturnedDate.HasValue)
+                                        {
+                                            <span class="badge bg-secondary">Returned</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Assigned</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        @if (!assignment.ReturnedDate.HasValue)
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ReturnAsset(assignment.AssignmentId)">
+                                                <i class="bi bi-box-arrow-in-left"></i> Return
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    No assignments found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        @if (PagedAssignments.TotalPages > 1)
+        {
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                <span class="text-muted small">Showing @PagedAssignments.Items.Count() of @PagedAssignments.TotalCount assignments</span>
+                <nav aria-label="Assignment history pagination">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(PagedAssignments.PageNumber == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="() => ChangePage(PagedAssignments.PageNumber - 1)">Previous</button>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Page @PagedAssignments.PageNumber of @PagedAssignments.TotalPages</span>
+                        </li>
+                        <li class="page-item @(PagedAssignments.PageNumber == PagedAssignments.TotalPages ? "disabled" : "")">
+                            <button class="page-link" @onclick="() => ChangePage(PagedAssignments.PageNumber + 1)">Next</button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private PagedResultDto<AssetAssignmentHistoryDto> PagedAssignments = new PagedResultDto<AssetAssignmentHistoryDto> { Items = new List<AssetAssignmentHistoryDto>() };
+    private AssignmentQueryDto QueryParams = new AssignmentQueryDto { PageSize = 10, PageNumber = 1 };
+    
+    private bool isLoading = true;
+    private string ErrorMessage = string.Empty;
+    private int? CurrentEmployeeId;
+    private string CurrentEmployeeName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var identityUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (identityUserId != null)
+            {
+                var employee = await EmployeeService.GetEmployeeByIdentityIdAsync(identityUserId);
+                if (employee != null)
+                {
+                    CurrentEmployeeId = employee.Id;
+                    CurrentEmployeeName = employee.FullName;
+                    QueryParams.EmployeeId = CurrentEmployeeId;
+                    await LoadAssignments();
+                }
+                else
+                {
+                    ErrorMessage = "Could not find your employee record.";
+                }
+            }
+            else
+            {
+                ErrorMessage = "Could not authenticate user.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading profile: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadAssignments()
+    {
+        if (CurrentEmployeeId.HasValue)
+        {
+            PagedAssignments = await AssetAssignmentService.GetAssetAssignmentHistoryAsync(QueryParams);
+        }
+    }
+
+    private async Task ChangePage(int newPage)
+    {
+        if (newPage >= 1 && newPage <= PagedAssignments.TotalPages)
+        {
+            QueryParams.PageNumber = newPage;
+            isLoading = true;
+            await LoadAssignments();
+            isLoading = false;
+        }
+    }
+    
+    private async Task ReturnAsset(int assignmentId)
+    {
+        try
+        {
+            // Direct Return: We use AssetAssignmentService.ReturnAssetAsync
+            await AssetAssignmentService.ReturnAssetAsync(assignmentId);
+            
+            // Reload the page data
+            await LoadAssignments();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error returning asset: {ex.Message}";
+        }
+    }
+}

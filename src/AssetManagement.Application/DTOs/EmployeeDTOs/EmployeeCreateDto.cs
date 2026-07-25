@@ -1,19 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using AssetManagement.Domain.Enums.Employees;
 
-namespace AssetManagement.Domain.Entities;
+namespace AssetManagement.Application.DTOs.EmployeeDTOs;
 
-public class Employee
+public class EmployeeCreateDto
 {
-    public int Id { get; set; }
-
-    public string? IdentityUserId { get; set; }
-
-    public DateOnly? DateOfBirth { get; set; }
-
     [Required(ErrorMessage = "Please enter the employee's full name.")]
     [StringLength(100, ErrorMessage = "Employee name must be less than 100 characters.")]
     public string FullName { get; set; } = string.Empty;
+
+    public DateOnly? DateOfBirth { get; set; }
 
     [Required(ErrorMessage = "Please select a department.")]
     public Department Department { get; set; }
@@ -30,5 +26,5 @@ public class Employee
     [Required(ErrorMessage = "Please select an employee designation.")]
     public EmployeeDesignation Designation { get; set; }
 
-    public EmployeeStatus Status { get; set; }
+
 }

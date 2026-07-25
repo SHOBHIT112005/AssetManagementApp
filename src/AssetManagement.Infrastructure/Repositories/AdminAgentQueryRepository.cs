@@ -1,11 +1,7 @@
 using System.Globalization;
-using AssetManagement.Application.Interfaces.Assets;
-using AssetManagement.Application.Interfaces.Assignments;
-using AssetManagement.Application.Interfaces.Employees;
-using AssetManagement.Application.Interfaces.Data;
 using AssetManagement.Application.Interfaces.Agent;
+using AssetManagement.Application.Interfaces.Data;
 using AssetManagement.Domain.Enums.Assets;
-using AssetManagement.Domain.Enums.Assignments;
 using AssetManagement.Domain.Enums.Employees;
 using Dapper;
 
@@ -27,7 +23,7 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
 
         var dataTemplate = builder.AddTemplate(@"
             SELECT TOP (@Limit)
-                a.AssetName, a.Type, a.SerialNumber, a.Status, a.Condition
+                a.AssetName, a.Type, a.SerialNumber, a.PurchaseDate, a.WarrantyExpiryDate, a.Status, a.Condition
             FROM Assets a
             /**where**/
             ORDER BY a.AssetName
@@ -45,12 +41,14 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
             a.AssetName,
             ((AssetType)a.Type).ToString(),
             a.SerialNumber,
+            FormatDate(a.PurchaseDate),
+            FormatDate(a.WarrantyExpiryDate),
             ((AssetStatus)a.Status).ToString(),
             ((AssetCondition)a.Condition).ToString()
         )).ToList();
 
         return new AgentQueryResult(
-            ["Asset Name", "Type", "Serial No.", "Status", "Condition"],
+            ["Asset Name", "Type", "Serial No.", "Purchase Date", "Warranty Expiry", "Status", "Condition"],
             rows,
             totalCount);
     }
@@ -65,17 +63,17 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
             var op = filter.Operator;
             var val = filter.Value ?? "";
 
-            if (filter.Field == "Department" && Enum.TryParse<Department>(val, true, out var deptVal))
+            if (filter.Field == "Department")
             {
-                if (op == "==") builder.Where("e.Department = @DeptVal", new { DeptVal = (int)deptVal });
+                ApplyEnumFilter<Department>(builder, "e.Department", op, val, ignoredFilters, filter.Field);
             }
-            else if (filter.Field == "Designation" && Enum.TryParse<EmployeeDesignation>(val, true, out var desigVal))
+            else if (filter.Field == "Designation")
             {
-                if (op == "==") builder.Where("e.Designation = @DesigVal", new { DesigVal = (int)desigVal });
+                ApplyEnumFilter<EmployeeDesignation>(builder, "e.Designation", op, val, ignoredFilters, filter.Field);
             }
-            else if (filter.Field == "Status" && Enum.TryParse<EmployeeStatus>(val, true, out var statusVal))
+            else if (filter.Field == "Status")
             {
-                if (op == "==") builder.Where("e.Status = @StatusVal", new { StatusVal = (int)statusVal });
+                ApplyEnumFilter<EmployeeStatus>(builder, "e.Status", op, val, ignoredFilters, filter.Field);
             }
             else if (filter.Field == "FullName")
             {
@@ -87,6 +85,10 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
                 if (op == "contains") builder.Where("e.Email LIKE @EmailVal", new { EmailVal = $"%{val}%" });
                 else if (op == "==") builder.Where("e.Email = @EmailVal", new { EmailVal = val });
             }
+            else if (filter.Field == "DateOfBirth")
+            {
+                ApplyDateFilter(builder, "e.DateOfBirth", "dob", op, val);
+            }
             else
             {
                 ignoredFilters.Add($"'{filter.Field} {op} {val}'");
@@ -95,7 +97,7 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
 
         var dataTemplate = builder.AddTemplate(@"
             SELECT TOP (@Limit)
-                e.FullName, e.Department, e.Designation, e.Email, e.Status
+                e.FullName, e.Department, e.Designation, e.Email, e.DateOfBirth, e.Status
             FROM Employees e
             /**where**/
             ORDER BY e.FullName
@@ -114,11 +116,13 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
             ((Department)e.Department).ToString(),
             ((EmployeeDesignation)e.Designation).ToString(),
             e.Email,
-            ((EmployeeStatus)e.Status).ToString()
+            e.DateOfBirth.HasValue ? FormatDate(e.DateOfBirth.Value) : "N/A",
+            ((EmployeeStatus)e.Status).ToString(),
+            ""
         )).ToList();
 
         return new AgentQueryResult(
-            ["Name", "Department", "Designation", "Email", "Status"],
+            ["Name", "Department", "Designation", "Email", "Date Of Birth", "Status"],
             rows,
             totalCount);
     }
@@ -148,10 +152,9 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
                 if (op == "contains") builder.Where("e.FullName LIKE @EmpNameVal", new { EmpNameVal = $"%{val}%" });
                 else if (op == "==") builder.Where("e.FullName = @EmpNameVal", new { EmpNameVal = val });
             }
-            else if (filter.Field == "Asset.Type" && Enum.TryParse<AssetType>(val, true, out var typeVal))
+            else if (filter.Field == "Asset.Type")
             {
-                if (op == "==") builder.Where("a.Type = @TypeVal", new { TypeVal = (int)typeVal });
-                if (op == "!=") builder.Where("a.Type <> @TypeVal", new { TypeVal = (int)typeVal });
+                ApplyEnumFilter<AssetType>(builder, "a.Type", op, val, ignoredFilters, filter.Field);
             }
             else if (filter.Field == "Asset.AssetName")
             {
@@ -195,7 +198,9 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
             a.AssetName,
             ((AssetType)a.AssetType).ToString(),
             FormatDate(a.AssignmentDate),
-            FormatStatus(a.ReturnDate)
+            FormatStatus(a.ReturnDate),
+            "",
+            ""
         )).ToList();
 
         return new AgentQueryResult(
@@ -204,12 +209,6 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
             totalCount);
     }
 
-    // --- Helper methods ---
-
-    /// <summary>
-    /// Applies asset-specific filters to a SqlBuilder. Shared between 
-    /// <see cref="QueryAssetsAsync"/> and <see cref="GetAssetIdsByFiltersAsync"/>.
-    /// </summary>
     private static void BuildAssetFilters(SqlBuilder builder, IReadOnlyList<AgentFilterCondition> filters, out List<string> ignoredFilters)
     {
         ignoredFilters = new List<string>();
@@ -219,19 +218,17 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
             var op = filter.Operator;
             var val = filter.Value ?? "";
 
-            if (filter.Field == "Type" && Enum.TryParse<AssetType>(val, true, out var typeVal))
+            if (filter.Field == "Type")
             {
-                if (op == "==") builder.Where("a.Type = @TypeVal", new { TypeVal = (int)typeVal });
-                if (op == "!=") builder.Where("a.Type <> @TypeVal", new { TypeVal = (int)typeVal });
+                ApplyEnumFilter<AssetType>(builder, "a.Type", op, val, ignoredFilters, filter.Field);
             }
-            else if (filter.Field == "Status" && Enum.TryParse<AssetStatus>(val, true, out var statusVal))
+            else if (filter.Field == "Status")
             {
-                if (op == "==") builder.Where("a.Status = @StatusVal", new { StatusVal = (int)statusVal });
-                if (op == "!=") builder.Where("a.Status <> @StatusVal", new { StatusVal = (int)statusVal });
+                ApplyEnumFilter<AssetStatus>(builder, "a.Status", op, val, ignoredFilters, filter.Field);
             }
-            else if (filter.Field == "Condition" && Enum.TryParse<AssetCondition>(val, true, out var condVal))
+            else if (filter.Field == "Condition")
             {
-                if (op == "==") builder.Where("a.Condition = @CondVal", new { CondVal = (int)condVal });
+                ApplyEnumFilter<AssetCondition>(builder, "a.Condition", op, val, ignoredFilters, filter.Field);
             }
             else if (filter.Field == "AssetName")
             {
@@ -274,11 +271,53 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
         return ids;
     }
 
-    private static void ApplyDateFilter(SqlBuilder builder, string column, string paramName, string op, string val)
+    private static void ApplyEnumFilter<TEnum>(SqlBuilder builder, string column, string op, string val, List<string> ignoredFilters, string filterField) where TEnum : struct, Enum
+    {
+        if (op == "==" && Enum.TryParse<TEnum>(val, true, out var exactVal))
+        {
+            var paramName = $"{column.Replace(".", "")}_{Guid.NewGuid():N}";
+            var parameters = new DynamicParameters();
+            parameters.Add(paramName, (int)(object)exactVal);
+            builder.Where($"{column} = @{paramName}", parameters);
+        }
+        else if (op == "!=" && Enum.TryParse<TEnum>(val, true, out var notExactVal))
+        {
+            var paramName = $"{column.Replace(".", "")}_{Guid.NewGuid():N}";
+            var parameters = new DynamicParameters();
+            parameters.Add(paramName, (int)(object)notExactVal);
+            builder.Where($"{column} <> @{paramName}", parameters);
+        }
+        else if (op == "contains")
+        {
+            var matchingValues = Enum.GetValues<TEnum>()
+                .Where(e => e.ToString().Contains(val, StringComparison.OrdinalIgnoreCase))
+                .Select(e => (int)(object)e)
+                .ToList();
+
+            if (matchingValues.Any())
+            {
+                var paramName = $"{column.Replace(".", "")}_{Guid.NewGuid():N}";
+                var parameters = new DynamicParameters();
+                parameters.Add(paramName, matchingValues);
+                builder.Where($"{column} IN @{paramName}", parameters);
+            }
+            else
+            {
+                builder.Where("1 = 0");
+            }
+        }
+        else
+        {
+            ignoredFilters.Add($"'{filterField} {op} {val}'");
+        }
+    }
+
+    private static void ApplyDateFilter(SqlBuilder builder, string column, string baseParamName, string op, string val)
     {
         if (!DateOnly.TryParse(val, CultureInfo.InvariantCulture, out var dateVal))
             return;
 
+        var paramName = $"{baseParamName}_{Guid.NewGuid():N}";
         var dateParam = dateVal.ToDateTime(TimeOnly.MinValue);
         var parameters = new DynamicParameters();
         parameters.Add(paramName, dateParam);
@@ -296,13 +335,13 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
     private static string FormatStatus(DateOnly? returnDate) =>
         returnDate == null ? "Assigned" : $"Returned {FormatDate(returnDate.Value)}";
 
-    // --- Internal Dapper mapping DTOs ---
-
     private sealed class AssetRow
     {
         public string AssetName { get; set; } = string.Empty;
         public int Type { get; set; }
         public string SerialNumber { get; set; } = string.Empty;
+        public DateOnly PurchaseDate { get; set; }
+        public DateOnly WarrantyExpiryDate { get; set; }
         public int Status { get; set; }
         public int Condition { get; set; }
     }
@@ -313,6 +352,7 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
         public int Department { get; set; }
         public int Designation { get; set; }
         public string Email { get; set; } = string.Empty;
+        public DateOnly? DateOfBirth { get; set; }
         public int Status { get; set; }
     }
 
@@ -325,5 +365,3 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
         public DateOnly? ReturnDate { get; set; }
     }
 }
-
-

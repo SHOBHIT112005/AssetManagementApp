@@ -75,6 +75,8 @@ namespace AssetManagement.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    IdentityUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Department = table.Column<int>(type: "int", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
@@ -202,8 +204,7 @@ namespace AssetManagement.Infrastructure.Migrations
                     AssetId = table.Column<int>(type: "int", nullable: false),
                     EmployeeId = table.Column<int>(type: "int", nullable: false),
                     AssignmentDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    ReturnDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true)
+                    ReturnDate = table.Column<DateOnly>(type: "date", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -270,6 +271,18 @@ namespace AssetManagement.Infrastructure.Migrations
                 name: "IX_AssetAssignments_EmployeeId",
                 table: "AssetAssignments",
                 column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assets_SerialNumber",
+                table: "Assets",
+                column: "SerialNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_Email",
+                table: "Employees",
+                column: "Email",
+                unique: true);
         }
 
         /// <inheritdoc />

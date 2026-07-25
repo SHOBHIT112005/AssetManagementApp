@@ -3,18 +3,17 @@
 @rendermode InteractiveServer
 @using AssetManagement.Domain.Entities
 @using AssetManagement.Application.Interfaces.Assets
-@using AssetManagement.Application.Interfaces.Assignments
-@using AssetManagement.Application.Interfaces.Employees
-@using AssetManagement.Application.Interfaces.Data
-@using AssetManagement.Application.Interfaces.Agent
 @using AssetManagement.Domain.Enums.Assets
-@using AssetManagement.Domain.Enums.Assignments
-@using AssetManagement.Domain.Enums.Employees
 @using Microsoft.AspNetCore.Components.Forms
 
 @inject NavigationManager Navigation
 @inject IAssetService AssetService
-<h3>Edit Asset</h3>
+
+<div class="app-form-container">
+<div class="app-form-header">
+    <h3>Edit Asset</h3>
+</div>
+
 @if (asset == null)
 {
     <p>Loading asset details, please wait...</p>
@@ -26,105 +25,98 @@ else
         <div class="alert alert-danger">@ErrorMessage</div>
     }
 
-    <EditForm Model="asset" OnValidSubmit="UpdateAsset" FormName="EditAsset">
-        <DataAnnotationsValidator />
+    <div class="app-form-card">
+        <EditForm Model="asset" OnValidSubmit="UpdateAsset" FormName="EditAsset">
+            <DataAnnotationsValidator />
 
-        <div class="mb-3">
-            <label for="name" class="form-label">
-                Asset Name <span class="text-danger">*</span>
-            </label>
+            <div class="app-form-section">
+                <div class="app-form-section-header">Detail</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="app-form-label">
+                            Asset Name <span class="text-danger">*</span>
+                        </label>
+                        <InputText id="name" class="form-control app-form-control" @bind-Value="asset.AssetName" />
+                        <ValidationMessage For="@(() => asset.AssetName)" class="app-form-validation" />
+                    </div>
 
-            <InputText id="name" class="form-control" @bind-Value="asset.AssetName" />
-            <ValidationMessage For="@(() => asset.AssetName)" />
-        </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="serialNumber" class="app-form-label">
+                            Serial Number <span class="text-danger">*</span>
+                        </label>
+                        <InputText id="serialNumber" class="form-control app-form-control" @bind-Value="asset.SerialNumber" placeholder="Enter serial number" />
+                        <ValidationMessage For="@(() => asset.SerialNumber)" class="app-form-validation" />
+                    </div>
 
-        <div class="mb-3">
-            <label for="serialNumber" class="form-label">
-                Serial Number <span class="text-danger">*</span>
-            </label>
+                    <div class="col-md-6 mb-3">
+                        <label for="assetType" class="app-form-label">
+                            Asset Type <span class="text-danger">*</span>
+                        </label>
+                        <InputSelect id="assetType" class="form-select app-form-control" @bind-Value="asset.Type">
+                            <option value="">-- Select Asset Type --</option>
+                            @foreach (AssetType type in Enum.GetValues<AssetType>())
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => asset.Type)" class="app-form-validation" />
+                    </div>
+                </div>
+            </div>
 
-            <InputText id="serialNumber" class="form-control" @bind-Value="asset.SerialNumber"
-                       placeholder="Enter serial number" />
-            <ValidationMessage For="@(() => asset.SerialNumber)" />
-        </div>
+            <div class="app-form-section">
+                <div class="app-form-section-header">Condition & Warranty</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="app-form-label">Purchase Date</label>
+                        <InputDate @bind-Value="asset.PurchaseDate" TValue="DateOnly" class="form-control app-form-control" min="2010-01-01" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
 
-        <div class="mb-3">
-            <label for="assetType" class="form-label">
-                Asset Type <span class="text-danger">*</span>
-            </label>
+                    <div class="col-md-6 mb-3">
+                        <label class="app-form-label">Warranty Expiry Date</label>
+                        <InputDate @bind-Value="asset.WarrantyExpiryDate" TValue="DateOnly" class="form-control app-form-control" min="2010-01-01" max="2040-12-31" />
+                    </div>
 
-            <InputSelect id="assetType" class="form-select" @bind-Value="asset.Type">
+                    <div class="col-md-6 mb-3">
+                        <label for="assetStatus" class="app-form-label">
+                            Asset Status <span class="text-danger">*</span>
+                        </label>
+                        <InputSelect id="assetStatus" class="form-select app-form-control" @bind-Value="asset.Status">
+                            <option value="">-- Select Asset Status --</option>
+                            @foreach (AssetStatus status in Enum.GetValues<AssetStatus>())
+                            {
+                                if (status != AssetStatus.Assigned) {
+                                    <option value="@status">@status</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => asset.Status)" class="app-form-validation" />
+                    </div>
 
-                <option value="">-- Select Asset Type --</option>
+                    <div class="col-md-6 mb-3">
+                        <label for="assetCondition" class="app-form-label">
+                            Asset Condition <span class="text-danger">*</span>
+                        </label>
+                        <InputSelect id="assetCondition" class="form-select app-form-control" @bind-Value="asset.Condition">
+                            <option value="">-- Select Asset Condition --</option>
+                            @foreach (AssetCondition condition in Enum.GetValues<AssetCondition>())
+                            {
+                                <option value="@condition">@condition</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => asset.Condition)" class="app-form-validation" />
+                    </div>
+                </div>
+            </div>
 
-                @foreach (AssetType type in Enum.GetValues<AssetType>())
-                {
-                    <option value="@type">
-                        @type
-                    </option>
-                }
-
-            </InputSelect>
-            <ValidationMessage For="@(() => asset.Type)" />
-        </div>
-
-        <div class="mb-3">
-            <label>Purchase Date</label>
-            <InputDate @bind-Value="asset.PurchaseDate" TValue="DateOnly" class="form-control" min="2010-01-01"
-                       max="@DateTime.Today.ToString("yyyy-MM-dd")" />
-        </div>
-
-        <div class="mb-3">
-            <label>Warranty Expiry Date</label>
-            <InputDate @bind-Value="asset.WarrantyExpiryDate" TValue="DateOnly" class="form-control" min="2010-01-01"
-                       max="2040-12-31" />
-        </div>
-
-        <div class="mb-3">
-            <label for="assetStatus" class="form-label">
-                Asset Status <span class="text-danger">*</span>
-            </label>
-
-            <InputSelect id="assetStatus" class="form-select" @bind-Value="asset.Status">
-
-                <option value="">-- Select Asset Status --</option>
-
-                @foreach (AssetStatus status in Enum.GetValues<AssetStatus>())
-                {
-                    if (status != AssetStatus.Assigned) {
-                        <option value="@status">
-                            @status
-                        </option>
-                    }
-                }
-
-            </InputSelect>
-            <ValidationMessage For="@(() => asset.Status)" />
-        </div>
-
-        <div class="mb-3">
-            <label for="assetCondition" class="form-label">
-                Asset Condition <span class="text-danger">*</span>
-            </label>
-
-            <InputSelect id="assetCondition" class="form-select" @bind-Value="asset.Condition">
-
-                <option value="">-- Select Asset Condition --</option>
-
-                @foreach (AssetCondition condition in Enum.GetValues<AssetCondition>())
-                {
-                    <option value="@condition">
-                        @condition
-                    </option>
-                }
-
-            </InputSelect>
-            <ValidationMessage For="@(() => asset.Condition)" />
-        </div>
-
-        <button type="submit" class="btn btn-primary">Update Asset</button>
-    </EditForm>
+            <div class="app-form-actions">
+                <button type="submit" class="btn btn-primary px-4">Update Asset</button>
+                <button type="button" class="btn btn-outline-secondary px-4" @onclick='() => Navigation.NavigateTo("/assets")'>Cancel</button>
+            </div>
+        </EditForm>
+    </div>
 }
+</div>
 
 @code {
     [Parameter] public int Id { get; set; }
@@ -138,7 +130,7 @@ else
         }
         catch (ArgumentException)
         {
-            Navigation.NavigateTo(uri: "/assets");
+            Navigation.NavigateTo("/assets");
         }
     }
 
@@ -153,13 +145,12 @@ else
         try
         {
             await AssetService.UpdateAssetAsync(asset!);
-            Navigation.NavigateTo(uri: "/assets");
+            Navigation.NavigateTo("/assets");
         }
         catch (Exception)
         {
             ErrorMessage = "An error occurred while updating the asset. Please try again.";
         }
     }
-
 }
 

@@ -3,13 +3,14 @@
 @attribute [Authorize]
 @using AssetManagement.Application.Interfaces.Assets
 @using AssetManagement.Application.Interfaces.Employees
-@using AssetManagement.Application.DTOs
 @using AssetManagement.Application.DTOs.AssetDTOs
 @using AssetManagement.Application.DTOs.EmployeeDTOs
 @inject IAssetService AssetService
 @inject IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
 
-<PageTitle>Admin Dashboard | Asset Management</PageTitle>
+<PageTitle>Dashboard | Asset Management</PageTitle>
 
 <header class="header">
     <div class="header-title">
@@ -38,16 +39,24 @@
         <p>Total Assets</p>
     </div>
     <div class="stat-card c-teal">
-        <h3>@AssignedRate</h3>
-        <p>Assigned Rate</p>
-    </div>
-    <div class="stat-card c-pink">
-        <h3>@AssetSummary.UnderRepairAssets</h3>
-        <p>Under Repair</p>
+        <h3>@AssetSummary.AvailableAssets</h3>
+        <p>Available Assets</p>
     </div>
     <div class="stat-card c-dark">
         <h3>@EmployeeSummary.ActiveEmployees</h3>
         <p>Active Employees</p>
+    </div>
+    <div class="stat-card" style="background-color: var(--brand-primary);">
+        <h3>@AssetSummary.AssignedAssets</h3>
+        <p>Assigned Assets</p>
+    </div>
+    <div class="stat-card c-pink">
+        <h3>@AssetSummary.ExpiringWarrantyAssets</h3>
+        <p>Expiring Warranty</p>
+    </div>
+    <div class="stat-card" style="background-color: var(--text-muted);">
+        <h3>@AssetSummary.UnderRepairAssets</h3>
+        <p>Under Repair</p>
     </div>
 </section>
 
@@ -98,17 +107,19 @@
 @code {
     private AssetSummaryDto AssetSummary = new();
     private EmployeeSummaryDto EmployeeSummary = new();
-    private string AssignedRate = "0%";
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.IsInRole("Employee"))
+        {
+            Navigation.NavigateTo("/my-assignments", forceLoad: true);
+            return;
+        }
+
         AssetSummary = await AssetService.GetAssetSummaryServiceAsync(new AssetQueryDto());
         EmployeeSummary = await EmployeeService.GetEmployeeSummaryServiceAsync(new EmployeeQueryDto());
-        
-        if (AssetSummary.TotalAssets > 0)
-        {
-            var rate = (int)Math.Round((double)AssetSummary.AssignedAssets / AssetSummary.TotalAssets * 100);
-            AssignedRate = $"{rate}%";
-        }
     }
 }
