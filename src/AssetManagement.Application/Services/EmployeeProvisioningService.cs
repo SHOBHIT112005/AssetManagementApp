@@ -76,7 +76,7 @@ public class EmployeeProvisioningService : IEmployeeProvisioningService
         var names = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var initials = string.Join("", names.Select(n => n[0].ToString().ToUpper()));
         var baseName = fullName.Replace(" ", "");
-        
+
         return $"{baseName}123#{initials}";
     }
 }

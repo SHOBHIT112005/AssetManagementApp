@@ -117,6 +117,9 @@ public class ExcelImportService
         if (TryDate(c.GetValueOrDefault("warrantyexpirydate", ""), out var warranty)) asset.WarrantyExpiryDate = warranty;
         else errors.Add("Invalid WarrantyExpiryDate (use yyyy-MM-dd)");
 
+        if (errors.Count == 0 && asset.WarrantyExpiryDate <= asset.PurchaseDate)
+            errors.Add("Warranty expiry date must be strictly after the purchase date.");
+
         Validate(asset, errors);
         return asset;
     }

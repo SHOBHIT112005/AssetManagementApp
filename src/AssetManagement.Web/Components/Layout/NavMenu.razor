@@ -34,15 +34,6 @@
     </ul>
 </nav>
 
-<AuthorizeView Roles="Admin">
-<div style="margin-top: auto; text-align: center;">
-    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);">
-        <p style="font-size: 0.8rem; color: #ffffff; font-weight: bold; margin: 0 0 10px 0;">Need Help?</p>
-        <button style="background: var(--brand-primary); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Ask AI Agent</button>
-    </div>
-</div>
-</AuthorizeView>
-
 @code {
     private string? currentUrl;
     protected override void OnInitialized()

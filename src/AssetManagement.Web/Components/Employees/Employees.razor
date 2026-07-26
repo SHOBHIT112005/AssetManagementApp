@@ -1,5 +1,5 @@
 @page "/employees"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
 @using AssetManagement.Application.DTOs

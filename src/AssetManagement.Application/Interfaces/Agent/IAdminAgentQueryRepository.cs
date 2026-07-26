@@ -15,13 +15,5 @@ public sealed record AgentQueryResult(
     IReadOnlyList<AgentQueryRow> Rows,
     int TotalCount);
 
-public sealed record AgentQueryRow(
-    string First,
-    string Second,
-    string Third,
-    string Fourth,
-    string Fifth,
-    string Sixth,
-    string Seventh
-);
+public sealed record AgentQueryRow(IReadOnlyList<string> Values);
 

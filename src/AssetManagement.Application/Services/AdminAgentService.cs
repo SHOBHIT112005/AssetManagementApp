@@ -209,12 +209,10 @@ public sealed class AdminAgentService
             ? "No data with these specific filters is available in the database."
             : action.summary;
 
-        var rows = queryResult.Rows.Select(r => new AdminAgentRow(r.First, r.Second, r.Third, r.Fourth, r.Fifth)).ToList();
-
         return AdminAgentResponse.WithRows(
             summary,
             queryResult.Columns,
-            rows,
+            queryResult.Rows,
             suggestions,
             queryResult.TotalCount > limit);
     }
@@ -223,7 +221,7 @@ public sealed class AdminAgentService
 public sealed record AdminAgentResponse(
     string Summary,
     IReadOnlyList<string> Columns,
-    IReadOnlyList<AdminAgentRow> Rows,
+    IReadOnlyList<AgentQueryRow> Rows,
     IReadOnlyList<string> Suggestions,
     bool IsTruncated)
 {
@@ -233,15 +231,8 @@ public sealed record AdminAgentResponse(
     public static AdminAgentResponse WithRows(
         string summary,
         IReadOnlyList<string> columns,
-        IReadOnlyList<AdminAgentRow> rows,
+        IReadOnlyList<AgentQueryRow> rows,
         IReadOnlyList<string> suggestions,
         bool isTruncated) =>
         new(summary, columns, rows, suggestions, isTruncated);
 }
-
-public sealed record AdminAgentRow(
-    string First,
-    string Second,
-    string Third,
-    string Fourth,
-    string Fifth);

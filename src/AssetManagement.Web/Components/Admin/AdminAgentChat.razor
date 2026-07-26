@@ -43,11 +43,10 @@
                                             @foreach (var row in message.Response.Rows)
                                             {
                                                 <tr>
-                                                    <td>@row.First</td>
-                                                    <td>@row.Second</td>
-                                                    <td>@row.Third</td>
-                                                    <td>@row.Fourth</td>
-                                                    <td>@row.Fifth</td>
+                                                    @foreach (var value in row.Values)
+                                                    {
+                                                        <td>@value</td>
+                                                    }
                                                 </tr>
                                             }
                                         </tbody>

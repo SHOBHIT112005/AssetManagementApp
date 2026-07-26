@@ -1,5 +1,5 @@
 @page "/assets/create"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 @using AssetManagement.Domain.Entities
 @using AssetManagement.Application.Interfaces.Assets
@@ -113,9 +113,9 @@
         if (_saving) return;
         _saving = true;
         ErrorMessage = string.Empty;
-        if (NewAsset.WarrantyExpiryDate < NewAsset.PurchaseDate)
+        if (NewAsset.WarrantyExpiryDate <= NewAsset.PurchaseDate)
         {
-            ErrorMessage = "Warranty expiry date must be on or after the purchase date.";
+            ErrorMessage = "Warranty expiry date must be strictly after the purchase date.";
             _saving = false;
             return;
         }
@@ -123,6 +123,10 @@
         {
             await AssetService.CreateAssetAsync(NewAsset);
             Navigation.NavigateTo("/assets");
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = ex.Message;
         }
         catch (Exception)
         {

@@ -1,5 +1,5 @@
 @page "/assets/edit/{Id:int}"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 @using AssetManagement.Domain.Entities
 @using AssetManagement.Application.Interfaces.Assets
@@ -137,15 +137,19 @@ else
     private async Task UpdateAsset()
     {
         ErrorMessage = string.Empty;
-        if (asset!.WarrantyExpiryDate < asset.PurchaseDate)
+        if (asset!.WarrantyExpiryDate <= asset.PurchaseDate)
         {
-            ErrorMessage = "Warranty expiry date must be on or after the purchase date.";
+            ErrorMessage = "Warranty expiry date must be strictly after the purchase date.";
             return;
         }
         try
         {
             await AssetService.UpdateAssetAsync(asset!);
             Navigation.NavigateTo("/assets");
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = ex.Message;
         }
         catch (Exception)
         {

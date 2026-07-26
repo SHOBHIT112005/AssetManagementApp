@@ -1,5 +1,5 @@
 @page "/assets/return/{assetId:int}"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
 @using AssetManagement.Domain.Entities
@@ -97,11 +97,11 @@ else
         }
         try
         {
-            SelectedAssignment = await AssetAssignmentService.GetActiveAssignmentByAssetIdAsync(assetId) ?? throw new ArgumentException(message: "No active assignment found for this asset.");
+            SelectedAssignment = await AssetAssignmentService.GetActiveAssignmentByAssetIdAsync(assetId);
 
-            AssignedEmployee = await EmployeeService.GetEmployeeByIdOrThrowAsync(SelectedAssignment.EmployeeId);
+            AssignedEmployee = await EmployeeService.GetEmployeeByIdOrThrowAsync(SelectedAssignment!.EmployeeId);
         }
-        catch (ArgumentException)
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
             ErrorMessage = "No active assignment found for this asset.";
             return;

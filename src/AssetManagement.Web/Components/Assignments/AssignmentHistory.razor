@@ -1,5 +1,5 @@
 @page "/assignments"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 @using AssetManagement.Application.DTOs
 @using AssetManagement.Application.DTOs.AssignmentDTOs
@@ -130,7 +130,7 @@ else
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Status</label>
-                    <InputSelect @bind-Value="Query.ReturnStatus" class="form-select">
+                    <InputSelect @bind-Value="ReturnStatusFilter" class="form-select">
                         <option value="">All Statuses</option>
                         <option value="false">Active (Assigned)</option>
                         <option value="true">Returned</option>
@@ -264,6 +264,12 @@ else
     private PagedResultDto<AssetAssignmentHistoryDto> PagedAssignments { get; set; } = new PagedResultDto<AssetAssignmentHistoryDto>();
     private AssignmentQueryDto Query { get; set; } = new AssignmentQueryDto();
     private string ErrorMessage { get; set; } = string.Empty;
+
+    private string ReturnStatusFilter
+    {
+        get => Query.ReturnStatus switch { true => "true", false => "false", null => "" };
+        set => Query.ReturnStatus = value switch { "true" => true, "false" => false, _ => null };
+    }
 
     private async Task LoadAssignmentsAsync()
     {

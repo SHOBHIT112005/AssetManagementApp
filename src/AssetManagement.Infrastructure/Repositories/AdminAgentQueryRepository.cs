@@ -37,7 +37,7 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
         var results = (await connection.QueryAsync<AssetRow>(dataTemplate.RawSql, dataTemplate.Parameters)).ToList();
         var totalCount = await connection.ExecuteScalarAsync<int>(countTemplate.RawSql, countTemplate.Parameters);
 
-        var rows = results.Select(a => new AgentQueryRow(
+        var rows = results.Select(a => new AgentQueryRow([
             a.AssetName,
             ((AssetType)a.Type).ToString(),
             a.SerialNumber,
@@ -45,7 +45,7 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
             FormatDate(a.WarrantyExpiryDate),
             ((AssetStatus)a.Status).ToString(),
             ((AssetCondition)a.Condition).ToString()
-        )).ToList();
+        ])).ToList();
 
         return new AgentQueryResult(
             ["Asset Name", "Type", "Serial No.", "Purchase Date", "Warranty Expiry", "Status", "Condition"],
@@ -111,15 +111,14 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
         var results = (await connection.QueryAsync<EmployeeRow>(dataTemplate.RawSql, dataTemplate.Parameters)).ToList();
         var totalCount = await connection.ExecuteScalarAsync<int>(countTemplate.RawSql, countTemplate.Parameters);
 
-        var rows = results.Select(e => new AgentQueryRow(
+        var rows = results.Select(e => new AgentQueryRow([
             e.FullName,
             ((Department)e.Department).ToString(),
             ((EmployeeDesignation)e.Designation).ToString(),
             e.Email,
             e.DateOfBirth.HasValue ? FormatDate(e.DateOfBirth.Value) : "N/A",
-            ((EmployeeStatus)e.Status).ToString(),
-            ""
-        )).ToList();
+            ((EmployeeStatus)e.Status).ToString()
+        ])).ToList();
 
         return new AgentQueryResult(
             ["Name", "Department", "Designation", "Email", "Date Of Birth", "Status"],
@@ -193,15 +192,13 @@ public sealed class AdminAgentQueryRepository : IAdminAgentQueryRepository
         var results = (await connection.QueryAsync<AssignmentRow>(dataTemplate.RawSql, dataTemplate.Parameters)).ToList();
         var totalCount = await connection.ExecuteScalarAsync<int>(countTemplate.RawSql, countTemplate.Parameters);
 
-        var rows = results.Select(a => new AgentQueryRow(
+        var rows = results.Select(a => new AgentQueryRow([
             a.EmployeeName,
             a.AssetName,
             ((AssetType)a.AssetType).ToString(),
             FormatDate(a.AssignmentDate),
-            FormatStatus(a.ReturnDate),
-            "",
-            ""
-        )).ToList();
+            FormatStatus(a.ReturnDate)
+        ])).ToList();
 
         return new AgentQueryResult(
             ["Employee", "Asset", "Type", "Assigned On", "Status"],
