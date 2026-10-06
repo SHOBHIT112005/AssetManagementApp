@@ -36,10 +36,6 @@ public sealed class AdminAgentService
         List<FilterCondition> filters,
         int limit,
         string summary);
-
-    /// <summary>
-    /// Sends a prompt to the Python agent, parses the response, and executes a read query.
-    /// </summary>
     public async Task<AdminAgentResponse> AskAsync(string prompt)
     {
         var normalizedPrompt = prompt.Trim();
@@ -174,10 +170,7 @@ public sealed class AdminAgentService
 
         return await HandleQueryAsync(action);
     }
-
-    /// <summary>
-    /// Handles read queries.
-    /// </summary>
+    
     private async Task<AdminAgentResponse> HandleQueryAsync(AgentAction action)
     {
         var filters = (action.filters ?? new List<FilterCondition>())

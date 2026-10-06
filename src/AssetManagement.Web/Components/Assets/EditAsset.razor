@@ -18,6 +18,17 @@
 {
     <p>Loading asset details, please wait...</p>
 }
+else if (asset.Status == AssetStatus.Assigned)
+{
+    <div class="app-form-card">
+        <div class="alert alert-warning">
+            This asset is currently assigned and cannot be edited. Return it from the Assignments page first to make changes.
+        </div>
+        <button type="button" class="btn btn-outline-secondary px-4" @onclick='() => Navigation.NavigateTo("/assets")'>
+            Back to Assets
+        </button>
+    </div>
+}
 else
 {
     @if (!string.IsNullOrEmpty(ErrorMessage))

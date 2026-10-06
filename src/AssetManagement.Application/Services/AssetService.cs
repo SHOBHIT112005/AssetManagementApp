@@ -119,6 +119,9 @@ public class AssetService : IAssetService
             if (existingAsset == null)
                 throw new ArgumentException("Not a valid asset Id, asset not found.");
 
+            if (existingAsset.Status == AssetStatus.Assigned)
+                throw new ArgumentException("Cannot edit an assigned asset. Please return it from the Assignments page first.");
+
             if (string.IsNullOrWhiteSpace(asset.AssetName))
                 throw new ArgumentException("Asset name is required.");
             if (string.IsNullOrWhiteSpace(asset.SerialNumber))
@@ -130,9 +133,6 @@ public class AssetService : IAssetService
             if (existingSerials.Contains(asset.SerialNumber.ToLowerInvariant()) &&
                 !string.Equals(existingAsset.SerialNumber, asset.SerialNumber, StringComparison.OrdinalIgnoreCase))
                 throw new ArgumentException("Serial number already exists.");
-
-            if (existingAsset.Status == AssetStatus.Assigned && asset.Status != AssetStatus.Assigned)
-                throw new ArgumentException("Cannot change status of an Assigned asset. Please return it from the Assignments page first.");
 
             if (existingAsset.Status != AssetStatus.Assigned && asset.Status == AssetStatus.Assigned)
                 throw new ArgumentException("Cannot manually change status to Assigned. Please assign it to an employee via the Assignments page.");

@@ -99,6 +99,11 @@ public class EmployeeService : IEmployeeService
             throw new ArgumentException("Employee not found.");
         }
 
+        if (existingEmployee.Status == EmployeeStatus.Inactive)
+        {
+            throw new ArgumentException("Cannot edit a deactivated employee. Reactivate the employee first.");
+        }
+
         if (string.IsNullOrWhiteSpace(employee.FullName))
         {
             throw new ArgumentException("Employee name is required.");

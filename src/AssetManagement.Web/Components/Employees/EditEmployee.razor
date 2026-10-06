@@ -25,6 +25,17 @@
 {
     <p>Loading employee details, please wait....</p>
 }
+else if (employee.Status == EmployeeStatus.Inactive)
+{
+    <div class="app-form-card">
+        <div class="alert alert-warning">
+            This employee is deactivated and cannot be edited. Reactivate the employee first to make changes.
+        </div>
+        <button type="button" class="btn btn-outline-secondary px-4" @onclick='() => Navigation.NavigateTo("/employees")'>
+            Back to Employees
+        </button>
+    </div>
+}
 else
 {
     <div class="app-form-card">

@@ -29,8 +29,8 @@
             <form method="post" action="/api/account/login@(!string.IsNullOrWhiteSpace(returnUrl) ? $"?returnUrl={Uri.EscapeDataString(returnUrl)}" : "")">
                 <AntiforgeryToken />
                 <div class="form-group">
-                    <label for="userName">Username</label>
-                    <input type="text" id="userName" name="userName" placeholder="Enter your username" required autofocus />
+                    <label for="userName">Username or Email</label>
+                    <input type="text" id="userName" name="userName" placeholder="Enter your username or email" required autofocus />
                 </div>
 
                 <div class="form-group">
@@ -375,7 +375,7 @@
     {
         errorMessage = error switch
         {
-            "invalid" => "Invalid username or password.",
+            "invalid" => "Invalid username, email, or password.",
             "locked" => "Your account has been locked. Please try again later.",
             "denied" => "Access denied. You do not have permission.",
             _ => null

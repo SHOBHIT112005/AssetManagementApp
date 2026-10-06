@@ -15,10 +15,23 @@ public static class AccountEndpoints
             [FromForm] string password,
             [FromForm] bool? rememberMe,
             [FromQuery] string? returnUrl,
-            SignInManager<ApplicationUser> signInManager) =>
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager) =>
         {
+            var isEmail = userName.Contains('@');
+            var loginUserName = userName;
+
+            if (isEmail)
+            {
+                var userByEmail = await userManager.FindByEmailAsync(userName);
+                if (userByEmail != null)
+                {
+                    loginUserName = userByEmail.UserName!;
+                }
+            }
+
             var result = await signInManager.PasswordSignInAsync(
-                userName, password, rememberMe ?? false, lockoutOnFailure: true);
+                loginUserName, password, rememberMe ?? false, lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
